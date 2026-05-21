@@ -12,11 +12,6 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
-
-
 jobs:
   verify:
     name: Verify
@@ -30,7 +25,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
+
+      - name: Debug
+        run: node --version && npm --version && ls package*.json
 
       - name: Install dependencies
         run: npm ci
