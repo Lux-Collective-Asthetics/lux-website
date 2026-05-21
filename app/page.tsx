@@ -24,6 +24,9 @@ export default function Home() {
             >
               Templates
             </a>{" "}
+            <button className="bg-foreground text-background hover:bg-[#383838] dark:hover:bg-[#ccc]">
+              Click me
+            </button>
             or the{" "}
             <a
               href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
