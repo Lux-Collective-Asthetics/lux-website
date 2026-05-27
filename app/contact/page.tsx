@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Mail, MapPin, Phone } from "lucide-react";
 
-import { BookButton } from "@/components/book-button";
+import { ContactForm } from "@/components/contact-form";
 import { business } from "@/content/site";
-import { getBookingUrl } from "@/lib/booking";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -11,60 +11,80 @@ export const metadata: Metadata = {
     "Contact The Lux Collective Aesthetics & Wellness in Newark, Ohio for general inquiries.",
 };
 
+const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
 export default function ContactPage() {
-  const bookingUrl = getBookingUrl();
-
   return (
-    <div className="mx-auto max-w-7xl px-5 py-12 sm:px-6 lg:px-8">
-      <div className="max-w-3xl">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent-foreground">
-          Contact
-        </p>
-        <h1 className="mt-4 text-5xl text-primary sm:text-6xl">
-          Questions, booking help, or general inquiries.
-        </h1>
-        <p className="mt-5 text-lg text-muted-foreground">
-          Please keep messages general. Do not send medical history, symptoms, photos, treatment details, or other health information through this website.
-        </p>
-        <div className="mt-8">
-          <BookButton
-            bookingUrl={bookingUrl}
-            label={bookingUrl ? "Open booking" : "Request booking help"}
-            source="contact"
-          />
-        </div>
-      </div>
+    <>
+      {turnstileSiteKey && (
+        <Script
+          src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+          strategy="lazyOnload"
+        />
+      )}
 
-      <div className="mt-10 grid gap-4 md:grid-cols-3">
-        <a className="rounded-lg border border-border bg-card p-5 transition-colors hover:bg-muted" href={`mailto:${business.email}`}>
-          <Mail className="size-5 text-accent" />
-          <h2 className="mt-4 text-2xl text-primary">Email</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{business.email}</p>
-        </a>
-        <a className="rounded-lg border border-border bg-card p-5 transition-colors hover:bg-muted" href={`tel:${business.phone.replaceAll(/[^\d]/g, "")}`}>
-          <Phone className="size-5 text-accent" />
-          <h2 className="mt-4 text-2xl text-primary">Phone</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{business.phone}</p>
-        </a>
-        <div className="rounded-lg border border-border bg-card p-5">
-          <MapPin className="size-5 text-accent" />
-          <h2 className="mt-4 text-2xl text-primary">Location</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {business.address.street}
-            <br />
-            {business.address.city}, {business.address.state} {business.address.zip}
+      <div className="mx-auto max-w-7xl px-5 py-12 sm:px-6 lg:px-8">
+        <div className="max-w-3xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent-foreground">
+            Contact
+          </p>
+          <h1 className="mt-4 text-5xl text-primary sm:text-6xl">
+            Questions, booking help, or general inquiries.
+          </h1>
+          <p className="mt-5 text-lg text-muted-foreground">
+            Send a general message below. For appointments, use the booking link — or call during business hours.
           </p>
         </div>
-      </div>
 
-      <section className="mt-10 rounded-lg border border-border bg-background p-6">
-        <h2 className="text-3xl text-primary">Hours</h2>
-        <ul className="mt-4 grid gap-2 text-muted-foreground sm:grid-cols-2">
-          {business.hours.map((hour) => (
-            <li key={hour}>{hour}</li>
-          ))}
-        </ul>
-      </section>
-    </div>
+        <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px]">
+          <ContactForm />
+
+          <div className="space-y-4">
+            <a
+              className="flex gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:bg-muted"
+              href={`mailto:${business.email}`}
+            >
+              <Mail className="mt-0.5 size-5 shrink-0 text-accent" />
+              <div>
+                <p className="font-semibold text-primary">Email</p>
+                <p className="mt-1 text-sm text-muted-foreground">{business.email}</p>
+              </div>
+            </a>
+
+            <a
+              className="flex gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:bg-muted"
+              href={`tel:${business.phone.replaceAll(/[^\d]/g, "")}`}
+            >
+              <Phone className="mt-0.5 size-5 shrink-0 text-accent" />
+              <div>
+                <p className="font-semibold text-primary">Phone</p>
+                <p className="mt-1 text-sm text-muted-foreground">{business.phone}</p>
+              </div>
+            </a>
+
+            <div className="flex gap-4 rounded-lg border border-border bg-card p-5">
+              <MapPin className="mt-0.5 size-5 shrink-0 text-accent" />
+              <div>
+                <p className="font-semibold text-primary">Location</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {business.address.street}
+                  <br />
+                  {business.address.city}, {business.address.state} {business.address.zip}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border bg-card p-5">
+              <p className="font-semibold text-primary">Hours</p>
+              <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
+                {business.hours.map((hour) => (
+                  <li key={hour}>{hour}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
