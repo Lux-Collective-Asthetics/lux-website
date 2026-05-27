@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 
 import { BookButton } from "@/components/book-button";
+import { media } from "@/content/media";
 import { serviceGroups } from "@/content/site";
 import { getBookingUrl } from "@/lib/booking";
 
@@ -25,6 +27,20 @@ export default function ServicesPage() {
         <p className="mt-5 text-lg text-muted-foreground">
           Pricing is listed from the current public menu. Some treatments require consultation, and final recommendations are made by the provider.
         </p>
+      </div>
+
+      <div className="mt-10 grid gap-4 md:grid-cols-3">
+        {[media.injectable, media.skinTreatment, media.laser].map((item) => (
+          <div key={item.src} className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-card">
+            <Image
+              src={item.src}
+              alt={item.alt}
+              fill
+              sizes="(min-width: 768px) 33vw, 100vw"
+              className="object-cover"
+            />
+          </div>
+        ))}
       </div>
 
       <div className="mt-10 space-y-10">

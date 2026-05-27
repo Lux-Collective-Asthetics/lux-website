@@ -1,9 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, MapPin, Sparkles } from "lucide-react";
 
 import { BookButton } from "@/components/book-button";
-import { PhotoPlaceholder } from "@/components/photo-placeholder";
 import { business, serviceGroups, testimonials } from "@/content/site";
+import { media } from "@/content/media";
 import { getBookingUrl } from "@/lib/booking";
 
 export default function Home() {
@@ -40,7 +41,16 @@ export default function Home() {
             </p>
           ) : null}
         </div>
-        <PhotoPlaceholder label="Placeholder for real Lux Collective treatment room or client result photography." />
+        <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+          <Image
+            src={media.hero.src}
+            alt={media.hero.alt}
+            fill
+            priority
+            sizes="(min-width: 768px) 46vw, 100vw"
+            className="object-cover"
+          />
+        </div>
       </section>
 
       <section className="border-y border-border bg-card">
@@ -86,6 +96,20 @@ export default function Home() {
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-4 px-5 pb-14 sm:px-6 md:grid-cols-3 lg:px-8">
+        {[media.injectable, media.skinTreatment, media.laser].map((item) => (
+          <div key={item.src} className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-card">
+            <Image
+              src={item.src}
+              alt={item.alt}
+              fill
+              sizes="(min-width: 768px) 33vw, 100vw"
+              className="object-cover"
+            />
+          </div>
+        ))}
       </section>
 
       <section className="bg-secondary/50">

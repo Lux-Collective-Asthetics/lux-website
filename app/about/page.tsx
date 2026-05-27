@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 
 import { BookButton } from "@/components/book-button";
-import { PhotoPlaceholder } from "@/components/photo-placeholder";
+import { media } from "@/content/media";
 import { business, brandPrinciples } from "@/content/site";
 import { getBookingUrl } from "@/lib/booking";
 
@@ -31,7 +32,15 @@ export default function AboutPage() {
             <BookButton bookingUrl={bookingUrl} source="about" />
           </div>
         </div>
-        <PhotoPlaceholder label="Placeholder for real Lux Collective team or studio photography." />
+        <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+          <Image
+            src={media.lounge.src}
+            alt={media.lounge.alt}
+            fill
+            sizes="(min-width: 768px) 50vw, 100vw"
+            className="object-cover"
+          />
+        </div>
       </section>
 
       <section className="border-y border-border bg-card">
