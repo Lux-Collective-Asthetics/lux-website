@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { CheckCircle } from "lucide-react";
 
-import { submitContact, type ContactFormState } from "@/app/contact/actions";
+import { submitContact, type ContactFormState } from "@/app/(public)/contact/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
