@@ -10,5 +10,8 @@
   },
   "observability": {
     "enabled": true
+  },
+  "vars": {
+    "ADMIN_EMAILS": "mevans@theluxcollectiveaesthetics.com,arobinson@theluxcollectiveaesthetics.com"
   }
 }
