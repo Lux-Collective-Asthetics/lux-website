@@ -1,6 +1,9 @@
 "use server";
 
+import { headers } from "next/headers";
+
 import { createServiceClient } from "@/lib/supabase/service";
+import { newsletterRateLimit } from "@/lib/redis";
 
 export type SubscribeState = {
   status: "idle" | "success" | "already" | "error";
@@ -25,6 +28,14 @@ export async function subscribe(
 
   if (Object.keys(errors).length > 0) {
     return { status: "error", message: "Please fix the errors below.", errors };
+  }
+
+  if (process.env.UPSTASH_REDIS_REST_URL) {
+    const ip = (await headers()).get("cf-connecting-ip") ?? "anonymous";
+    const { success } = await newsletterRateLimit.limit(ip);
+    if (!success) {
+      return { status: "error", message: "Too many requests. Please try again later." };
+    }
   }
 
   const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;

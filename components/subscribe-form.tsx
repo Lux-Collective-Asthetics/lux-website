@@ -22,7 +22,7 @@ export function SubscribeForm() {
       <div className="flex items-start gap-3 rounded-lg border border-border bg-card p-5">
         <CheckCircle className="mt-0.5 size-5 shrink-0 text-accent" />
         <div>
-          <p className="font-medium text-primary">You're subscribed</p>
+          <p className="font-medium text-primary">You&apos;re subscribed</p>
           <p className="mt-1 text-sm text-muted-foreground">{state.message}</p>
         </div>
       </div>

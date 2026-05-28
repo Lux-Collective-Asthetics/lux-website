@@ -1,6 +1,9 @@
 "use server";
 
+import { headers } from "next/headers";
+
 import { sendContactEmail } from "@/lib/email";
+import { contactRateLimit } from "@/lib/redis";
 
 export type ContactFormState = {
   status: "idle" | "success" | "error";
@@ -44,6 +47,14 @@ export async function submitContact(
 
   if (Object.keys(errors).length > 0) {
     return { status: "error", message: "Please fix the errors below.", errors };
+  }
+
+  if (process.env.UPSTASH_REDIS_REST_URL) {
+    const ip = (await headers()).get("cf-connecting-ip") ?? "anonymous";
+    const { success } = await contactRateLimit.limit(ip);
+    if (!success) {
+      return { status: "error", message: "Too many requests. Please try again later." };
+    }
   }
 
   const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
