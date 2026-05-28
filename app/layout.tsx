@@ -18,11 +18,26 @@ const dmSerifDisplay = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://theluxcollectiveaesthetics.com"),
   title: {
     default: business.name,
     template: `%s | ${business.shortName}`,
   },
   description: business.description,
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://theluxcollectiveaesthetics.com",
+    siteName: business.name,
+    title: business.name,
+    description: business.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: business.name,
+    description: business.description,
+  },
 };
 
 const cfBeaconToken = process.env.NEXT_PUBLIC_CF_BEACON_TOKEN;
@@ -42,7 +57,7 @@ export default function RootLayout({
         {cfBeaconToken && (
           <Script
             src="https://static.cloudflareinsights.com/beacon.min.js"
-            data-cf-beacon={`{"token":"${cfBeaconToken}"}`}
+            data-cf-beacon={JSON.stringify({ token: cfBeaconToken })}
             strategy="afterInteractive"
           />
         )}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { business, brandPrinciples } from "@/content/site";
+import { business } from "@/content/site";
 
 export function SiteFooter() {
   return (
@@ -13,6 +13,9 @@ export function SiteFooter() {
             {business.address.zip}
           </p>
           <p className="mt-2 text-sm text-primary-foreground/75">
+            <a href={`tel:${business.phone.replaceAll(/[^\d]/g, "")}`}>{business.phone}</a>
+          </p>
+          <p className="mt-1 text-sm text-primary-foreground/75">
             <a href={`mailto:${business.email}`}>{business.email}</a>
           </p>
         </div>
@@ -25,16 +28,17 @@ export function SiteFooter() {
           </ul>
         </div>
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em]">Site Boundary</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em]">Explore</p>
           <ul className="mt-3 space-y-2 text-sm text-primary-foreground/75">
-            {brandPrinciples.map((principle) => (
-              <li key={principle}>{principle}</li>
-            ))}
+            <li><Link href="/services" className="hover:text-primary-foreground transition-colors">Services &amp; Pricing</Link></li>
+            <li><Link href="/about" className="hover:text-primary-foreground transition-colors">About</Link></li>
+            <li><Link href="/contact" className="hover:text-primary-foreground transition-colors">Contact</Link></li>
+            <li><Link href="/newsletter" className="hover:text-primary-foreground transition-colors">Newsletter</Link></li>
           </ul>
         </div>
       </div>
       <div className="border-t border-primary-foreground/15 px-5 py-4 text-center text-xs text-primary-foreground/65">
-        <Link href="/contact">Contact</Link> for general inquiries. Do not send medical information through this website.
+        &copy; {new Date().getFullYear()} {business.name}. General inquiries only — do not send medical information through this website.
       </div>
     </footer>
   );

@@ -22,7 +22,7 @@ export const business = {
   description:
     "A warm, science-led med spa focused on natural-looking results, medical-grade treatments, and care that feels personal from the first visit.",
   email: "info@theluxcollectiveaesthetics.com",
-  phone: "(740) 334-2275",
+  phone: "(740) 504-8780",
   address: {
     street: "1612 N 21st Street",
     city: "Newark",
@@ -164,7 +164,7 @@ export const testimonials: Testimonial[] = [
 ];
 
 export const brandPrinciples = [
-  "Real client photos only; no AI-generated or AI-enhanced results imagery.",
-  "No medical history, symptoms, treatment details, or PHI are collected on this website.",
-  "Booking is handled through the external patient-facing scheduling link once available.",
+  "Consultation-led care — every service starts with a provider conversation, not a package upsell.",
+  "Real results, real imagery — we use actual client photos; no stock photography or AI-generated visuals.",
+  "Your privacy matters — we never collect medical history or health information through this website.",
 ];

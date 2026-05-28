@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, MapPin, Sparkles } from "lucide-react";
@@ -7,12 +8,66 @@ import { business, serviceGroups, testimonials } from "@/content/site";
 import { media } from "@/content/media";
 import { getBookingUrl } from "@/lib/booking";
 
+const BASE_URL = "https://theluxcollectiveaesthetics.com";
+
+export const metadata: Metadata = {
+  title: `${business.name} | Newark, Ohio Med Spa`,
+  description: business.description,
+  keywords: [
+    "med spa Newark Ohio",
+    "aesthetics Newark Ohio",
+    "botox Newark Ohio",
+    "laser treatment Newark Ohio",
+    "medical weight loss Newark Ohio",
+    "dermal filler Newark Ohio",
+    "PRP facial Newark Ohio",
+    "hormone replacement therapy Ohio",
+  ],
+  openGraph: {
+    title: business.name,
+    description: business.description,
+    url: BASE_URL,
+    type: "website",
+    images: [{ url: `${BASE_URL}/hero-med-spa.jpg`, width: 1200, height: 900, alt: "The Lux Collective Aesthetics & Wellness" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: business.name,
+    description: business.description,
+    images: [`${BASE_URL}/hero-med-spa.jpg`],
+  },
+};
+
+const localBusinessSchema = {
+  "@context": "https://schema.org",
+  "@type": "MedicalBusiness",
+  name: business.name,
+  description: business.description,
+  url: BASE_URL,
+  telephone: business.phone,
+  email: business.email,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: business.address.street,
+    addressLocality: business.address.city,
+    addressRegion: business.address.state,
+    postalCode: business.address.zip,
+    addressCountry: "US",
+  },
+  openingHours: ["Mo 09:00-15:00", "Tu 09:00-18:00", "We 09:00-15:00", "Th 09:00-15:00", "Fr 09:00-15:00", "Sa 09:00-12:00"],
+  priceRange: "$$",
+};
+
 export default function Home() {
   const bookingUrl = getBookingUrl();
   const featuredServices = serviceGroups.flatMap((group) => group.services).slice(0, 6);
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema).replace(/</g, "\\u003c") }}
+      />
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-6 md:grid-cols-[1.05fr_0.95fr] md:items-center lg:px-8 lg:py-18">
         <div>
           <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-accent-foreground">
@@ -23,7 +78,7 @@ export default function Home() {
             Refined aesthetic care, grounded in real results.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
-            {business.description} Every service is consultation-led, PHI-free on this website, and routed to the right next step.
+            {business.description}
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <BookButton bookingUrl={bookingUrl} source="home_hero" />
@@ -35,11 +90,15 @@ export default function Home() {
               <ArrowRight className="size-4" />
             </Link>
           </div>
-          {!bookingUrl ? (
+          {!bookingUrl && (
             <p className="mt-4 max-w-xl text-sm text-muted-foreground">
-              Online booking link is pending. Booking CTAs route to general contact until the public Patient Fusion or FollowMyHealth URL is ready.
+              Online booking coming soon —{" "}
+              <a href={`tel:${business.phone.replaceAll(/[^\d]/g, "")}`} className="underline underline-offset-2">
+                call us at {business.phone}
+              </a>{" "}
+              to schedule.
             </p>
-          ) : null}
+          )}
         </div>
         <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-card shadow-sm">
           <Image

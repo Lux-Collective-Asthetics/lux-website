@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+
+import { SubscribeForm } from "@/components/subscribe-form";
 
 export const metadata: Metadata = {
   title: "Newsletter",
-  description:
-    "Lux Collective Aesthetics & Wellness updates and announcements.",
+  description: "Stay in the loop on treatments, specials, and wellness tips from The Lux Collective.",
 };
 
 export default function NewsletterPage() {
@@ -14,17 +14,15 @@ export default function NewsletterPage() {
         Newsletter
       </p>
       <h1 className="mt-4 text-5xl text-primary sm:text-6xl">
-        Updates are coming after the launch foundation is live.
+        Stay in the loop.
       </h1>
-      <p className="mt-5 text-lg text-muted-foreground">
-        The newsletter system is intentionally parked until the core marketing site, DNS move, and email sending domain are ready. No subscriber form is active yet, so no data is collected here.
+      <p className="mt-5 max-w-xl text-lg text-muted-foreground">
+        Occasional updates on new treatments, seasonal specials, and wellness tips — straight from the team. No spam, unsubscribe any time.
       </p>
-      <Link
-        href="/contact"
-        className="mt-8 inline-flex h-9 items-center justify-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground"
-      >
-        Contact The Lux
-      </Link>
+
+      <div className="mt-10 max-w-sm">
+        <SubscribeForm />
+      </div>
     </div>
   );
 }

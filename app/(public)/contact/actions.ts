@@ -22,9 +22,15 @@ export async function submitContact(
 
   const errors: ContactFormState["errors"] = {};
 
-  if (!name) errors.name = ["Name is required."];
+  if (!name) {
+    errors.name = ["Name is required."];
+  } else if (name.length > 100) {
+    errors.name = ["Name is too long."];
+  }
   if (!email) {
     errors.email = ["Email is required."];
+  } else if (email.length > 320) {
+    errors.email = ["Email is too long."];
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     errors.email = ["Please enter a valid email address."];
   }
@@ -32,6 +38,8 @@ export async function submitContact(
     errors.message = ["Message is required."];
   } else if (message.length < 10) {
     errors.message = ["Message must be at least 10 characters."];
+  } else if (message.length > 5000) {
+    errors.message = ["Message is too long (5000 character limit)."];
   }
 
   if (Object.keys(errors).length > 0) {

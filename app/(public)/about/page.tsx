@@ -9,7 +9,12 @@ import { getBookingUrl } from "@/lib/booking";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Learn about The Lux Collective Aesthetics & Wellness, a luxe medical spa in Newark, Ohio.",
+    "Learn about The Lux Collective Aesthetics & Wellness — a science-led med spa in Newark, Ohio focused on natural-looking results and personalized care.",
+  openGraph: {
+    title: "About | The Lux Collective",
+    description: "A science-led med spa in Newark, Ohio focused on natural-looking results and personalized care.",
+    url: "https://theluxcollectiveaesthetics.com/about",
+  },
 };
 
 export default function AboutPage() {

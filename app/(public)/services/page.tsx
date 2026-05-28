@@ -7,9 +7,24 @@ import { serviceGroups } from "@/content/site";
 import { getBookingUrl } from "@/lib/booking";
 
 export const metadata: Metadata = {
-  title: "Services",
+  title: "Services & Pricing",
   description:
-    "Explore services and pricing for The Lux Collective Aesthetics & Wellness in Newark, Ohio.",
+    "Full services and pricing for The Lux Collective Aesthetics & Wellness in Newark, Ohio — injectables, laser treatments, PRP, medical weight loss, and more.",
+  keywords: [
+    "botox Newark Ohio",
+    "dermal filler Newark Ohio",
+    "laser hair removal Newark Ohio",
+    "laser photo facial Newark Ohio",
+    "vampire facial PRP Newark Ohio",
+    "medical weight loss semaglutide Ohio",
+    "hormone replacement therapy Ohio",
+    "med spa services Newark Ohio",
+  ],
+  openGraph: {
+    title: "Services & Pricing | The Lux Collective",
+    description: "Injectables, laser treatments, PRP, weight loss, and hormone therapy in Newark, Ohio.",
+    url: "https://theluxcollectiveaesthetics.com/services",
+  },
 };
 
 export default function ServicesPage() {
