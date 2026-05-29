@@ -149,3 +149,34 @@
     line-height: 1.15;
   }
 }
+
+@keyframes lux-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lux-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lux-fade-in-1 { animation: lux-fade-in 0.5s ease 0.1s both; }
+  .lux-fade-up-3 { animation: lux-fade-up 0.6s ease 0.3s both; }
+  .lux-fade-up-5 { animation: lux-fade-up 0.6s ease 0.5s both; }
+  .lux-fade-up-7 { animation: lux-fade-up 0.6s ease 0.7s both; }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
