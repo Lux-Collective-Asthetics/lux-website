@@ -23,6 +23,6 @@
     "enabled": true
   },
   "vars": {
-    "ADMIN_EMAILS": "mevans@theluxcollectiveaesthetics.com,arobinson@theluxcollectiveaesthetics.com"
+    "ADMIN_EMAILS": ""
   }
 }

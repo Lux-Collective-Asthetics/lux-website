@@ -15,6 +15,15 @@ export default async function AdminLayout({
 
   if (!user) redirect("/admin/login");
 
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (adminEmails.length > 0 && !adminEmails.includes((user.email ?? "").toLowerCase())) {
+    redirect("/admin/login");
+  }
+
   return (
     <div className="min-h-screen bg-muted/30">
       <header className="border-b border-border bg-card">

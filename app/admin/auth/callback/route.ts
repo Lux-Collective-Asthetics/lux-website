@@ -6,8 +6,17 @@ const adminEmails = (process.env.ADMIN_EMAILS ?? "")
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
 
+const ALLOWED_HOSTS = new Set([
+  "theluxcollectiveaesthetics.com",
+  "www.theluxcollectiveaesthetics.com",
+  "localhost:3000",
+]);
+
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const url = new URL(request.url);
+  const { searchParams } = url;
+  const trustedHost = ALLOWED_HOSTS.has(url.host) ? url.host : "theluxcollectiveaesthetics.com";
+  const origin = `${trustedHost.includes("localhost") ? "http" : "https"}://${trustedHost}`;
   const code = searchParams.get("code");
 
   if (!code) {

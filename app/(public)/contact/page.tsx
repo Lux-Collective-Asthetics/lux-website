@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Mail, MapPin, Phone } from "lucide-react";
 
 import { ContactForm } from "@/components/contact-form";
@@ -11,18 +10,9 @@ export const metadata: Metadata = {
     "Contact The Lux Collective Aesthetics & Wellness in Newark, Ohio for general inquiries.",
 };
 
-const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-
 export default function ContactPage() {
   return (
     <>
-      {turnstileSiteKey && (
-        <Script
-          src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-          strategy="lazyOnload"
-        />
-      )}
-
       <div className="mx-auto max-w-7xl px-5 py-12 sm:px-6 lg:px-8">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent-foreground">

@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 
 import { createServiceClient } from "@/lib/supabase/service";
 import { newsletterRateLimit } from "@/lib/redis";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 export type SubscribeState = {
   status: "idle" | "success" | "already" | "error";
@@ -31,7 +32,11 @@ export async function subscribe(
   }
 
   if (process.env.UPSTASH_REDIS_REST_URL) {
-    const ip = (await headers()).get("cf-connecting-ip") ?? "anonymous";
+    const hdrs = await headers();
+    const ip =
+      hdrs.get("cf-connecting-ip") ??
+      hdrs.get("x-forwarded-for")?.split(",")[0].trim() ??
+      "anonymous";
     const { success } = await newsletterRateLimit.limit(ip);
     if (!success) {
       return { status: "error", message: "Too many requests. Please try again later." };
@@ -52,20 +57,27 @@ export async function subscribe(
 
   const supabase = createServiceClient();
 
-  const { data: existing } = await supabase
+  const { data: existing, error: selectError } = await supabase
     .from("subscribers")
     .select("id, status")
     .eq("email", email)
     .maybeSingle();
 
+  if (selectError) {
+    return { status: "error", message: "Something went wrong. Please try again." };
+  }
+
   if (existing) {
     if (existing.status === "active") {
       return { status: "already", message: "You're already on the list." };
     }
-    await supabase
+    const { error: updateError } = await supabase
       .from("subscribers")
       .update({ status: "active", unsubscribed_at: null, subscribed_at: new Date().toISOString() })
       .eq("id", existing.id);
+    if (updateError) {
+      return { status: "error", message: "Something went wrong. Please try again." };
+    }
     return { status: "success", message: "Welcome back — you've been re-subscribed." };
   }
 
@@ -77,16 +89,3 @@ export async function subscribe(
   return { status: "success", message: "You're on the list. We'll be in touch." };
 }
 
-async function verifyTurnstile(token: string, secret: string): Promise<boolean> {
-  try {
-    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ secret, response: token }),
-    });
-    const data = (await res.json()) as { success: boolean };
-    return data.success;
-  } catch {
-    return false;
-  }
-}

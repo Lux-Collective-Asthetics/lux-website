@@ -12,11 +12,15 @@ export async function GET(request: NextRequest) {
 
   const supabase = createServiceClient();
 
-  const { data: subscriber } = await supabase
+  const { data: subscriber, error: selectError } = await supabase
     .from("subscribers")
     .select("id, status")
     .eq("token", token)
     .maybeSingle();
+
+  if (selectError) {
+    redirect("/unsubscribed?result=error");
+  }
 
   if (!subscriber) {
     redirect("/unsubscribed?result=invalid");
@@ -26,10 +30,14 @@ export async function GET(request: NextRequest) {
     redirect("/unsubscribed?result=already");
   }
 
-  await supabase
+  const { error: updateError } = await supabase
     .from("subscribers")
     .update({ status: "unsubscribed", unsubscribed_at: new Date().toISOString() })
     .eq("id", subscriber.id);
+
+  if (updateError) {
+    redirect("/unsubscribed?result=error");
+  }
 
   redirect("/unsubscribed?result=success");
 }

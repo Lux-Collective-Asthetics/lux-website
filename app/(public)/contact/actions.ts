@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 
 import { sendContactEmail } from "@/lib/email";
 import { contactRateLimit } from "@/lib/redis";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 export type ContactFormState = {
   status: "idle" | "success" | "error";
@@ -50,7 +51,11 @@ export async function submitContact(
   }
 
   if (process.env.UPSTASH_REDIS_REST_URL) {
-    const ip = (await headers()).get("cf-connecting-ip") ?? "anonymous";
+    const hdrs = await headers();
+    const ip =
+      hdrs.get("cf-connecting-ip") ??
+      hdrs.get("x-forwarded-for")?.split(",")[0].trim() ??
+      "anonymous";
     const { success } = await contactRateLimit.limit(ip);
     if (!success) {
       return { status: "error", message: "Too many requests. Please try again later." };
@@ -72,7 +77,12 @@ export async function submitContact(
     }
   }
 
-  await sendContactEmail({ name, email, message });
+  try {
+    await sendContactEmail({ name, email, message });
+  } catch (err) {
+    console.error("[contact] sendContactEmail failed:", err);
+    return { status: "error", message: "Failed to send message. Please try again." };
+  }
 
   return {
     status: "success",
@@ -80,16 +90,3 @@ export async function submitContact(
   };
 }
 
-async function verifyTurnstile(token: string, secret: string): Promise<boolean> {
-  try {
-    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ secret, response: token }),
-    });
-    const data = (await res.json()) as { success: boolean };
-    return data.success;
-  } catch {
-    return false;
-  }
-}

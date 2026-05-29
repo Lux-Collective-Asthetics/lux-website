@@ -7,10 +7,19 @@ export const metadata: Metadata = { title: "Subscribers" };
 
 export default async function SubscribersPage() {
   const supabase = createServiceClient();
-  const { data: subscribers } = await supabase
+  const { data: subscribers, error } = await supabase
     .from("subscribers")
     .select("id, email, status, subscribed_at")
     .order("subscribed_at", { ascending: false });
+
+  if (error) {
+    return (
+      <div>
+        <h1 className="text-3xl text-primary">Subscribers</h1>
+        <p className="mt-4 text-muted-foreground">Failed to load subscribers. Please try again.</p>
+      </div>
+    );
+  }
 
   const active = subscribers?.filter((s) => s.status === "active").length ?? 0;
   const total = subscribers?.length ?? 0;

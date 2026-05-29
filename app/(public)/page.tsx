@@ -125,7 +125,9 @@ export default function Home() {
           </div>
           <div>
             <p className="font-semibold">Current hours</p>
-            <p className="text-sm text-muted-foreground">M, W-F 9 AM-3 PM; Tue 9 AM-6 PM; Sat 9 AM-Noon</p>
+            <p className="text-sm text-muted-foreground">
+              {business.hours?.join(" · ") ?? "Hours unavailable"}
+            </p>
           </div>
           <div>
             <p className="font-semibold">General inquiries</p>

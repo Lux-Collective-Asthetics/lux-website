@@ -27,6 +27,10 @@ export const metadata: Metadata = {
   },
 };
 
+function slug(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 export default function ServicesPage() {
   const bookingUrl = getBookingUrl();
 
@@ -60,9 +64,9 @@ export default function ServicesPage() {
 
       <div className="mt-10 space-y-10">
         {serviceGroups.map((group) => (
-          <section key={group.name} aria-labelledby={`${group.name}-heading`}>
+          <section key={group.name} aria-labelledby={`${slug(group.name)}-heading`}>
             <div className="flex flex-col justify-between gap-3 border-b border-border pb-3 sm:flex-row sm:items-end">
-              <h2 id={`${group.name}-heading`} className="text-3xl text-primary">
+              <h2 id={`${slug(group.name)}-heading`} className="text-3xl text-primary">
                 {group.name}
               </h2>
               <BookButton

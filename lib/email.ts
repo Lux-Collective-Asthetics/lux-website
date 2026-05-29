@@ -9,7 +9,7 @@ type ContactEmailData = {
 export async function sendContactEmail(data: ContactEmailData): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.log("[contact] email stub (RESEND_API_KEY not set):", data);
+    console.log("[contact] email stub — RESEND_API_KEY not set, payload suppressed");
     return;
   }
 
