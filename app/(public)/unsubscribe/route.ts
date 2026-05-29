@@ -49,9 +49,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
-  const token = formData.get("token") as string | null;
+  const token = formData.get("token");
 
-  if (!token) {
+  if (typeof token !== "string" || !token) {
     redirect("/unsubscribed?result=invalid");
   }
 
