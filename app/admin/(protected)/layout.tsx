@@ -20,7 +20,7 @@ export default async function AdminLayout({
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
 
-  if (adminEmails.length > 0 && !adminEmails.includes((user.email ?? "").toLowerCase())) {
+  if (adminEmails.length === 0 || !adminEmails.includes((user.email ?? "").toLowerCase())) {
     redirect("/admin/login");
   }
 

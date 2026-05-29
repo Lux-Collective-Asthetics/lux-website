@@ -32,14 +32,19 @@ export async function subscribe(
   }
 
   if (process.env.UPSTASH_REDIS_REST_URL) {
-    const hdrs = await headers();
-    const ip =
-      hdrs.get("cf-connecting-ip") ??
-      hdrs.get("x-forwarded-for")?.split(",")[0].trim() ??
-      "anonymous";
-    const { success } = await newsletterRateLimit.limit(ip);
-    if (!success) {
-      return { status: "error", message: "Too many requests. Please try again later." };
+    try {
+      const hdrs = await headers();
+      const ip =
+        hdrs.get("cf-connecting-ip") ??
+        hdrs.get("x-forwarded-for")?.split(",")[0].trim() ??
+        "anonymous";
+      const { success } = await newsletterRateLimit.limit(ip);
+      if (!success) {
+        return { status: "error", message: "Too many requests. Please try again later." };
+      }
+    } catch (err) {
+      console.error("[newsletter] rate limit check failed:", err);
+      return { status: "error", message: "Rate limit service unavailable. Please try again later." };
     }
   }
 
@@ -49,9 +54,14 @@ export async function subscribe(
     if (!token) {
       return { status: "error", message: "Please complete the security check." };
     }
-    const verified = await verifyTurnstile(token, turnstileSecret);
-    if (!verified) {
-      return { status: "error", message: "Security check failed. Please refresh and try again." };
+    try {
+      const verified = await verifyTurnstile(token, turnstileSecret);
+      if (!verified) {
+        return { status: "error", message: "Security check failed. Please refresh and try again." };
+      }
+    } catch (err) {
+      console.error("[newsletter] Turnstile verification failed:", err);
+      return { status: "error", message: "Security check service unavailable. Please try again later." };
     }
   }
 
@@ -67,25 +77,28 @@ export async function subscribe(
     return { status: "error", message: "Something went wrong. Please try again." };
   }
 
-  if (existing) {
-    if (existing.status === "active") {
-      return { status: "already", message: "You're already on the list." };
-    }
-    const { error: updateError } = await supabase
-      .from("subscribers")
-      .update({ status: "active", unsubscribed_at: null, subscribed_at: new Date().toISOString() })
-      .eq("id", existing.id);
-    if (updateError) {
-      return { status: "error", message: "Something went wrong. Please try again." };
-    }
-    return { status: "success", message: "Welcome back — you've been re-subscribed." };
+  if (existing?.status === "active") {
+    return { status: "already", message: "You're already on the list." };
   }
 
-  const { error } = await supabase.from("subscribers").insert({ email });
-  if (error) {
+  const now = new Date().toISOString();
+  const isResubscription = !!existing;
+
+  const { error: upsertError } = await supabase
+    .from("subscribers")
+    .upsert(
+      { email, status: "active", subscribed_at: now, unsubscribed_at: null },
+      { onConflict: "email" },
+    );
+
+  if (upsertError) {
     return { status: "error", message: "Something went wrong. Please try again." };
   }
 
-  return { status: "success", message: "You're on the list. We'll be in touch." };
+  return {
+    status: "success",
+    message: isResubscription
+      ? "Welcome back — you've been re-subscribed."
+      : "You're on the list. We'll be in touch.",
+  };
 }
-

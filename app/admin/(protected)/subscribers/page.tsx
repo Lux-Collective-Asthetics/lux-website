@@ -1,11 +1,29 @@
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 
+import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Subscribers" };
 
 export default async function SubscribersPage() {
+  const sessionClient = await createClient();
+  const {
+    data: { user },
+  } = await sessionClient.auth.getUser();
+
+  if (!user) redirect("/admin/login");
+
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (adminEmails.length === 0 || !adminEmails.includes((user.email ?? "").toLowerCase())) {
+    redirect("/admin/login");
+  }
+
   const supabase = createServiceClient();
   const { data: subscribers, error } = await supabase
     .from("subscribers")

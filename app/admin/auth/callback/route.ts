@@ -1,16 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { ALLOWED_HOSTS } from "@/lib/admin-hosts";
 
 const adminEmails = (process.env.ADMIN_EMAILS ?? "")
   .split(",")
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
-
-const ALLOWED_HOSTS = new Set([
-  "theluxcollectiveaesthetics.com",
-  "www.theluxcollectiveaesthetics.com",
-  "localhost:3000",
-]);
 
 export async function GET(request: Request) {
   const url = new URL(request.url);

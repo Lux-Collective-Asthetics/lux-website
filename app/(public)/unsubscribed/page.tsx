@@ -16,6 +16,10 @@ const messages = {
     heading: "Already unsubscribed.",
     body: "This email address is already removed from our list.",
   },
+  error: {
+    heading: "Something went wrong.",
+    body: "We couldn't process your request. Please try again or contact us for help.",
+  },
   invalid: {
     heading: "Invalid link.",
     body: "This unsubscribe link is invalid or has expired.",
@@ -30,7 +34,8 @@ export default async function UnsubscribedPage({
   searchParams: Promise<{ result?: string }>;
 }) {
   const { result } = await searchParams;
-  const key: Result = result === "already" || result === "success" ? result : "invalid";
+  const key: Result =
+    result === "already" || result === "success" || result === "error" ? result : "invalid";
   const { heading, body } = messages[key];
 
   return (

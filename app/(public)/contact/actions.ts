@@ -51,14 +51,19 @@ export async function submitContact(
   }
 
   if (process.env.UPSTASH_REDIS_REST_URL) {
-    const hdrs = await headers();
-    const ip =
-      hdrs.get("cf-connecting-ip") ??
-      hdrs.get("x-forwarded-for")?.split(",")[0].trim() ??
-      "anonymous";
-    const { success } = await contactRateLimit.limit(ip);
-    if (!success) {
-      return { status: "error", message: "Too many requests. Please try again later." };
+    try {
+      const hdrs = await headers();
+      const ip =
+        hdrs.get("cf-connecting-ip") ??
+        hdrs.get("x-forwarded-for")?.split(",")[0].trim() ??
+        "anonymous";
+      const { success } = await contactRateLimit.limit(ip);
+      if (!success) {
+        return { status: "error", message: "Too many requests. Please try again later." };
+      }
+    } catch (err) {
+      console.error("[contact] rate limit check failed:", err);
+      return { status: "error", message: "Service unavailable. Please try again later." };
     }
   }
 
@@ -68,12 +73,17 @@ export async function submitContact(
     if (!token) {
       return { status: "error", message: "Please complete the security check." };
     }
-    const verified = await verifyTurnstile(token, turnstileSecret);
-    if (!verified) {
-      return {
-        status: "error",
-        message: "Security check failed. Please refresh and try again.",
-      };
+    try {
+      const verified = await verifyTurnstile(token, turnstileSecret);
+      if (!verified) {
+        return {
+          status: "error",
+          message: "Security check failed. Please refresh and try again.",
+        };
+      }
+    } catch (err) {
+      console.error("[contact] Turnstile verification failed:", err);
+      return { status: "error", message: "Service unavailable. Please try again later." };
     }
   }
 

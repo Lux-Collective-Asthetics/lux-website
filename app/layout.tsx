@@ -3,6 +3,7 @@ import { DM_Serif_Display, Inter } from "next/font/google";
 import Script from "next/script";
 
 import { business } from "@/content/site";
+import { siteUrl } from "@/lib/site-url";
 
 import "./globals.css";
 
@@ -18,7 +19,7 @@ const dmSerifDisplay = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://theluxcollectiveaesthetics.com"),
+  metadataBase: new URL(siteUrl),
   title: {
     default: business.name,
     template: `%s | ${business.shortName}`,
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://theluxcollectiveaesthetics.com",
+    url: siteUrl,
     siteName: business.name,
     title: business.name,
     description: business.description,

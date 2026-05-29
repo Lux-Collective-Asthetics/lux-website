@@ -3,12 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-
-const ALLOWED_HOSTS = new Set([
-  "theluxcollectiveaesthetics.com",
-  "www.theluxcollectiveaesthetics.com",
-  "localhost:3000",
-]);
+import { ALLOWED_HOSTS } from "@/lib/admin-hosts";
 
 export async function signInWithGoogle() {
   const headersList = await headers();

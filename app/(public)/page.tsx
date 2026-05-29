@@ -7,8 +7,7 @@ import { BookButton } from "@/components/book-button";
 import { business, serviceGroups, testimonials } from "@/content/site";
 import { media } from "@/content/media";
 import { getBookingUrl } from "@/lib/booking";
-
-const BASE_URL = "https://theluxcollectiveaesthetics.com";
+import { siteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: `${business.name} | Newark, Ohio Med Spa`,
@@ -26,15 +25,15 @@ export const metadata: Metadata = {
   openGraph: {
     title: business.name,
     description: business.description,
-    url: BASE_URL,
+    url: siteUrl,
     type: "website",
-    images: [{ url: `${BASE_URL}/hero-med-spa.jpg`, width: 1200, height: 900, alt: "The Lux Collective Aesthetics & Wellness" }],
+    images: [{ url: `${siteUrl}/hero-med-spa.jpg`, width: 1200, height: 900, alt: "The Lux Collective Aesthetics & Wellness" }],
   },
   twitter: {
     card: "summary_large_image",
     title: business.name,
     description: business.description,
-    images: [`${BASE_URL}/hero-med-spa.jpg`],
+    images: [`${siteUrl}/hero-med-spa.jpg`],
   },
 };
 
@@ -43,7 +42,7 @@ const localBusinessSchema = {
   "@type": "MedicalBusiness",
   name: business.name,
   description: business.description,
-  url: BASE_URL,
+  url: siteUrl,
   telephone: business.phone,
   email: business.email,
   address: {

@@ -9,15 +9,19 @@ type ContactEmailData = {
 export async function sendContactEmail(data: ContactEmailData): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.log("[contact] email stub — RESEND_API_KEY not set, payload suppressed");
-    return;
+    throw new Error("Missing env: RESEND_API_KEY");
   }
 
-  const resend = new Resend(apiKey);
   const to = (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((e) => e.trim())
     .filter(Boolean);
+
+  if (to.length === 0) {
+    throw new Error("No admin recipients configured: ADMIN_EMAILS is empty");
+  }
+
+  const resend = new Resend(apiKey);
 
   await resend.emails.send({
     from: "noreply@send.theluxcollectiveaesthetics.com",
