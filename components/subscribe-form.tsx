@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useLayoutEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { CheckCircle } from "lucide-react";
 
@@ -13,6 +13,29 @@ import { cn } from "@/lib/utils";
 const initialState: SubscribeState = { status: "idle", message: "" };
 
 const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+declare global {
+  interface Window {
+    turnstile?: { remove: (id: string) => void };
+  }
+}
+
+// Separate component so its useLayoutEffect cleanup fires on unmount,
+// which React runs before removing DOM nodes — giving us a valid el.id.
+function TurnstileWidget({ siteKey }: { siteKey: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    return () => {
+      if (el?.id) window.turnstile?.remove(el.id);
+    };
+  }, []);
+
+  return (
+    <div ref={ref} className="cf-turnstile" data-sitekey={siteKey} data-theme="light" />
+  );
+}
 
 export function SubscribeForm() {
   const [state, formAction] = useActionState(subscribe, initialState);
@@ -61,13 +84,7 @@ export function SubscribeForm() {
         )}
       </div>
 
-      {turnstileSiteKey && (
-        <div
-          className="cf-turnstile"
-          data-sitekey={turnstileSiteKey}
-          data-theme="light"
-        />
-      )}
+      {turnstileSiteKey && <TurnstileWidget siteKey={turnstileSiteKey} />}
 
       <SubmitButton />
     </form>
