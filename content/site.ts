@@ -164,7 +164,7 @@ export const testimonials: Testimonial[] = [
 ];
 
 export const brandPrinciples = [
-  "Real client photos only; no AI-generated or AI-enhanced results imagery.",
-  "No medical history, symptoms, treatment details, or PHI are collected on this website.",
-  "Booking is handled through the external patient-facing scheduling link once available.",
+  "Consultation-led care — every service starts with a provider conversation, not a package upsell.",
+  "Real results, real imagery — we use actual client photos; no stock photography or AI-generated visuals.",
+  "Your privacy matters — we never collect medical history or health information through this website.",
 ];
