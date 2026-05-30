@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, MapPin, Sparkles } from "lucide-react";
+import { ArrowRight, Clock, Mail, MapPin, Sparkles } from "lucide-react";
 
 import { BookButton } from "@/components/book-button";
+import { RevealSection } from "@/components/shared/reveal-section";
 import { business, serviceGroups, testimonials } from "@/content/site";
 import { media } from "@/content/media";
 import { getBookingUrl } from "@/lib/booking";
 import { siteUrl } from "@/lib/site-url";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: `${business.name} | Newark, Ohio Med Spa`,
@@ -59,7 +61,7 @@ const localBusinessSchema = {
 
 export default function Home() {
   const bookingUrl = getBookingUrl();
-  const featuredServices = serviceGroups.flatMap((group) => group.services).slice(0, 6);
+  const featuredServices = serviceGroups.flatMap((group) => group.services).slice(0, 5);
 
   return (
     <>
@@ -67,54 +69,55 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema).replace(/</g, "\\u003c") }}
       />
-      <section className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-6 md:grid-cols-[1.05fr_0.95fr] md:items-center lg:px-8 lg:py-18">
-        <div>
-          <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-accent-foreground">
-            <Sparkles className="size-4 text-accent" />
-            Newark, Ohio med spa
-          </p>
-          <h1 className="mt-5 max-w-3xl text-5xl text-primary sm:text-6xl lg:text-7xl">
-            Refined aesthetic care, grounded in real results.
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
-            {business.description}
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <BookButton bookingUrl={bookingUrl} source="home_hero" />
-            <Link
-              href="/services"
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border px-3 text-sm font-medium transition-colors hover:bg-muted"
-            >
-              View services
-              <ArrowRight className="size-4" />
-            </Link>
-          </div>
-          {!bookingUrl && (
-            <p className="mt-4 max-w-xl text-sm text-muted-foreground">
-              Online booking coming soon —{" "}
-              <a href={`tel:${business.phone.replaceAll(/[^\d]/g, "")}`} className="underline underline-offset-2">
-                call us at {business.phone}
-              </a>{" "}
-              to schedule.
+
+      {/* Hero */}
+      <section className="relative flex min-h-120 items-center overflow-hidden bg-[linear-gradient(145deg,var(--cream),var(--blush))]">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-16 size-80 rounded-full bg-blush opacity-50" />
+        <div aria-hidden="true" className="pointer-events-none absolute -left-8 bottom-0 size-56 rounded-full bg-taupe opacity-35" />
+        <div aria-hidden="true" className="pointer-events-none absolute right-1/4 top-1/3 size-44 rounded-full bg-blush opacity-40" />
+
+        <div className="relative z-10 mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8">
+          <div className="max-w-xl">
+            <p className="lux-fade-in-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-accent-foreground">
+              <Sparkles className="size-4 text-accent" />
+              Newark, Ohio med spa
             </p>
-          )}
-        </div>
-        <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-          <Image
-            src={media.hero.src}
-            alt={media.hero.alt}
-            fill
-            priority
-            sizes="(min-width: 768px) 46vw, 100vw"
-            className="object-cover"
-          />
+            <h1 className="lux-fade-up-3 mt-5 text-5xl text-primary sm:text-6xl lg:text-7xl">
+              Refined aesthetic care, grounded in <em>real results.</em>
+            </h1>
+            <p className="lux-fade-up-5 mt-6 max-w-xl text-lg text-muted-foreground">
+              {business.description}
+            </p>
+            <div className="lux-fade-up-7 mt-8 flex flex-col gap-3 sm:flex-row">
+              <BookButton bookingUrl={bookingUrl} source="home_hero" className="rounded-full" />
+              <Link
+                href="/services"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-border px-5 text-sm font-medium transition-colors hover:bg-muted"
+              >
+                View services
+                <ArrowRight className="size-4" />
+              </Link>
+            </div>
+            {!bookingUrl && (
+              <p className="mt-4 max-w-xl text-sm text-muted-foreground">
+                Online booking coming soon —{" "}
+                <a href={`tel:${business.phone.replaceAll(/[^\d]/g, "")}`} className="underline underline-offset-2">
+                  call us at {business.phone}
+                </a>{" "}
+                to schedule.
+              </p>
+            )}
+          </div>
         </div>
       </section>
 
-      <section className="border-y border-border bg-card">
+      {/* Info strip */}
+      <RevealSection className="border-y border-border bg-card">
         <div className="mx-auto grid max-w-7xl gap-5 px-5 py-6 sm:px-6 md:grid-cols-3 lg:px-8">
-          <div className="flex items-start gap-3">
-            <MapPin className="mt-1 size-5 text-accent" />
+          <div className="flex items-start gap-3 md:border-r md:border-border md:pr-5">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-blush">
+              <MapPin className="size-4 text-accent" />
+            </div>
             <div>
               <p className="font-semibold">Visit The Lux</p>
               <p className="text-sm text-muted-foreground">
@@ -122,22 +125,33 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div>
-            <p className="font-semibold">Current hours</p>
-            <p className="text-sm text-muted-foreground">
-              {business.hours?.join(" · ") ?? "Hours unavailable"}
-            </p>
+          <div className="flex items-start gap-3 md:border-r md:border-border md:px-5">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-blush">
+              <Clock className="size-4 text-accent" />
+            </div>
+            <div>
+              <p className="font-semibold">Current hours</p>
+              <p className="text-sm text-muted-foreground">
+                {business.hours?.join(" · ") ?? "Hours unavailable"}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="font-semibold">General inquiries</p>
-            <a className="text-sm text-muted-foreground underline-offset-4 hover:underline" href={`mailto:${business.email}`}>
-              {business.email}
-            </a>
+          <div className="flex items-start gap-3 md:pl-5">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-blush">
+              <Mail className="size-4 text-accent" />
+            </div>
+            <div>
+              <p className="font-semibold">General inquiries</p>
+              <a className="text-sm text-muted-foreground underline-offset-4 hover:underline" href={`mailto:${business.email}`}>
+                {business.email}
+              </a>
+            </div>
           </div>
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8">
+      {/* Services bento */}
+      <RevealSection className="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent-foreground">Services</p>
@@ -147,20 +161,35 @@ export default function Home() {
             Full menu <ArrowRight className="size-4" />
           </Link>
         </div>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {featuredServices.map((service) => (
-            <article key={service.name} className="rounded-lg border border-border bg-background p-5 shadow-sm">
-              <h3 className="text-xl text-primary">{service.name}</h3>
-              <p className="mt-3 text-sm text-muted-foreground">{service.summary}</p>
-              <p className="mt-4 text-sm font-semibold text-foreground">{service.priceLines[0]}</p>
+        <div className="mt-8 grid gap-4 md:grid-cols-[1.4fr_1fr_1fr] md:grid-rows-[auto_auto]">
+          {featuredServices.map((service, i) => (
+            <article
+              key={service.name}
+              className={cn(
+                "rounded-lg border p-5 shadow-sm",
+                i === 0
+                  ? "border-transparent bg-primary text-primary-foreground md:row-span-2"
+                  : "border-border bg-card transition-transform hover:-translate-y-1 hover:bg-muted"
+              )}
+            >
+              <h3 className={cn("text-xl", i !== 0 && "text-primary")}>{service.name}</h3>
+              <p className={cn("mt-3 text-sm", i === 0 ? "opacity-80" : "text-muted-foreground")}>{service.summary}</p>
+              <p className={cn("mt-4 text-sm font-semibold", i !== 0 && "text-foreground")}>{service.priceLines[0]}</p>
             </article>
           ))}
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="mx-auto grid max-w-7xl gap-4 px-5 pb-14 sm:px-6 md:grid-cols-3 lg:px-8">
-        {[media.injectable, media.skinTreatment, media.laser].map((item) => (
-          <div key={item.src} className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-card">
+      {/* Staggered photo gallery */}
+      <RevealSection className="mx-auto grid max-w-7xl gap-4 px-5 pb-14 sm:px-6 md:grid-cols-3 md:items-end lg:px-8">
+        {[media.injectable, media.skinTreatment, media.laser].map((item, i) => (
+          <div
+            key={item.src}
+            className={cn(
+              "relative overflow-hidden rounded-lg border border-border bg-card",
+              i === 1 ? "aspect-3/4 -mt-6" : "aspect-4/3"
+            )}
+          >
             <Image
               src={item.src}
               alt={item.alt}
@@ -170,21 +199,29 @@ export default function Home() {
             />
           </div>
         ))}
-      </section>
+      </RevealSection>
 
-      <section className="bg-secondary/50">
+      {/* Testimonials */}
+      <RevealSection className="bg-secondary/50">
         <div className="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8">
           <h2 className="max-w-3xl text-4xl text-primary">Real relationships. Real reviews. Real imagery only.</h2>
           <div className="mt-8 grid gap-4 md:grid-cols-2">
-            {testimonials.slice(0, 4).map((testimonial) => (
-              <figure key={testimonial.author} className="rounded-lg border border-border bg-background p-5">
-                <blockquote className="text-muted-foreground">&ldquo;{testimonial.quote}&rdquo;</blockquote>
+            {testimonials.slice(0, 4).map((testimonial, i) => (
+              <figure
+                key={testimonial.author}
+                className={cn(
+                  "rounded-lg border border-border p-5",
+                  i % 2 === 0 ? "bg-background" : "bg-card"
+                )}
+              >
+                <span aria-hidden="true" className="block font-heading text-5xl leading-none text-accent opacity-60">&ldquo;</span>
+                <blockquote className="mt-2 italic text-muted-foreground">{testimonial.quote}</blockquote>
                 <figcaption className="mt-4 text-sm font-semibold">{testimonial.author}</figcaption>
               </figure>
             ))}
           </div>
         </div>
-      </section>
+      </RevealSection>
     </>
   );
 }
