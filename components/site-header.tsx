@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { BookButton } from "@/components/book-button";
+import { NewsletterDialogTrigger } from "@/components/newsletter-dialog-trigger";
 import { getBookingUrl } from "@/lib/booking";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +13,6 @@ const navItems = [
   { href: "/services", label: "Services" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
-  { href: "/newsletter", label: "Newsletter" },
 ];
 
 export function SiteHeader() {
@@ -49,6 +49,9 @@ export function SiteHeader() {
                   </li>
                 );
               })}
+              <li>
+                <NewsletterDialogTrigger showIcon className="inline-flex items-center gap-1" />
+              </li>
             </ul>
           </nav>
           <BookButton

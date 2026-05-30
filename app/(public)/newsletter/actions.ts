@@ -16,6 +16,11 @@ export async function subscribe(
   _prev: SubscribeState,
   formData: FormData,
 ): Promise<SubscribeState> {
+  const website = (formData.get("website") as string | null)?.trim() ?? "";
+  if (website) {
+    return { status: "error", message: "Something went wrong. Please try again." };
+  }
+
   const email = (formData.get("email") as string | null)?.trim().toLowerCase() ?? "";
 
   const errors: SubscribeState["errors"] = {};
