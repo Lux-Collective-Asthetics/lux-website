@@ -15,6 +15,9 @@ export function RevealSection({ className, children }: RevealSectionProps) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
+    // Fire 150px before the section enters the viewport so content fades in
+    // before the user reaches it — eliminates the blank-then-appear effect.
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -22,7 +25,7 @@ export function RevealSection({ className, children }: RevealSectionProps) {
           observer.disconnect();
         }
       },
-      { threshold: 0.15 }
+      { threshold: 0, rootMargin: "0px 0px 150px 0px" }
     );
     observer.observe(el);
     return () => observer.disconnect();
