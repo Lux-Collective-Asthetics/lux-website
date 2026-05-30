@@ -144,6 +144,49 @@ export const serviceGroups: ServiceGroup[] = [
   },
 ];
 
+export type StaffMember = {
+  name: string;
+  credential: string;
+  title: string;
+  bio: string;
+  initials: string;
+  isOwner?: boolean;
+  photo?: string;
+};
+
+export const staff: StaffMember[] = [
+  {
+    name: "Megan Evans",
+    credential: "CNP",
+    title: "Certified Nurse Practitioner",
+    bio: "Megan brings a clinical eye and a warm, approachable style to every consultation — helping clients feel confident in their care from the very first visit.",
+    initials: "ME",
+    isOwner: true,
+  },
+  {
+    name: "Ashley Robinson",
+    credential: "APRN",
+    title: "Advanced Practice Registered Nurse",
+    bio: "Ashley's approach is rooted in safety, precision, and genuine connection — she believes every client deserves a provider who listens before treating.",
+    initials: "AR",
+    isOwner: true,
+  },
+  {
+    name: "Rachel Kunkler",
+    credential: "AE",
+    title: "Advanced Esthetician",
+    bio: "Rachel's deep knowledge of skin health means every treatment is thoughtful, precise, and tailored to what your skin actually needs.",
+    initials: "RK",
+  },
+  {
+    name: "Morgan Frost",
+    credential: "LMT",
+    title: "Licensed Massage Therapist",
+    bio: "Morgan creates a space where clients feel genuinely cared for — her sessions are calm, attentive, and designed around your comfort and wellness goals.",
+    initials: "MF",
+  },
+];
+
 export const testimonials: Testimonial[] = [
   {
     quote: "The staff is absolutely amazing. I've never been happier with my results. 10/10 recommend.",

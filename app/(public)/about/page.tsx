@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { BadgeCheck, HeartHandshake, Microscope, ShieldCheck, Sparkles } from "lucide-react";
+import { ShieldCheck, Sparkles } from "lucide-react";
 
 import { BookButton } from "@/components/book-button";
-import { business, brandPrinciples } from "@/content/site";
+import { business, brandPrinciples, staff } from "@/content/site";
 import { media } from "@/content/media";
 import { getBookingUrl } from "@/lib/booking";
 
@@ -18,26 +18,6 @@ export const metadata: Metadata = {
   },
 };
 
-const specialists = [
-  {
-    role: "Aesthetic Injector",
-    focus: "Botox, Dysport, Xeomin, Jeuveau, dermal filler",
-    detail: "Facial balancing, soft movement, and natural-looking refresh plans.",
-    icon: BadgeCheck,
-  },
-  {
-    role: "Laser & Skin Specialist",
-    focus: "IPL photo facials, laser hair removal, vein treatments",
-    detail: "Technology-led treatments for clearer tone, texture, and confidence.",
-    icon: Microscope,
-  },
-  {
-    role: "Wellness Provider",
-    focus: "Medical weight loss, HRT, regenerative services",
-    detail: "Clinical support for clients who want care that goes beyond the surface.",
-    icon: HeartHandshake,
-  },
-];
 
 export default function AboutPage() {
   const bookingUrl = getBookingUrl();
@@ -114,35 +94,40 @@ export default function AboutPage() {
 
       <section className="border-y border-border bg-primary text-primary-foreground">
         <div className="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-foreground/65">
-                Specialized people
-              </p>
-              <h2 className="mt-3 max-w-3xl text-4xl">
-                A team structure that helps clients find the right expert.
-              </h2>
-            </div>
-            <p className="max-w-md text-sm text-primary-foreground/70">
-              Staff profiles can be updated with real names, credentials, photos, and specialty details as soon as the team is ready to publish them.
-            </p>
-          </div>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-foreground/65">
+            Meet the team
+          </p>
+          <h2 className="mt-3 max-w-xl text-4xl">
+            The people behind every treatment.
+          </h2>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {specialists.map((person) => {
-              const Icon = person.icon;
-
-              return (
-                <article key={person.role} className="rounded-lg border border-primary-foreground/15 bg-primary-foreground/8 p-5">
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-primary-foreground text-primary">
-                    <Icon className="size-5" />
+          <div className="mt-8 flex flex-col gap-4">
+            {staff.map((member) => (
+              <article
+                key={member.name}
+                className="flex gap-5 rounded-lg border border-primary-foreground/15 bg-primary-foreground/8 p-5"
+              >
+                <div className="flex h-20 w-16 shrink-0 items-center justify-center rounded-lg bg-primary-foreground/10 text-sm font-semibold tracking-wide text-champagne">
+                  {member.initials}
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-lg font-semibold text-primary-foreground">
+                      {member.name}, {member.credential}
+                    </h3>
+                    {member.isOwner && (
+                      <span className="rounded border border-champagne/30 bg-champagne/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-champagne">
+                        Co-owner
+                      </span>
+                    )}
                   </div>
-                  <h3 className="mt-5 text-3xl">{person.role}</h3>
-                  <p className="mt-3 text-sm font-semibold text-champagne">{person.focus}</p>
-                  <p className="mt-3 text-sm text-primary-foreground/70">{person.detail}</p>
-                </article>
-              );
-            })}
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-primary-foreground/55">
+                    {member.title}
+                  </p>
+                  <p className="mt-3 text-sm text-primary-foreground/70">{member.bio}</p>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>
