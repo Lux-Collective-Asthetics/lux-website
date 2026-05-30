@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Sparkles } from "lucide-react";
 
 import { SubscribeForm } from "@/components/subscribe-form";
 
@@ -9,20 +10,23 @@ export const metadata: Metadata = {
 
 export default function NewsletterPage() {
   return (
-    <div className="mx-auto max-w-4xl px-5 py-12 sm:px-6 lg:px-8">
-      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent-foreground">
-        Newsletter
-      </p>
-      <h1 className="mt-4 text-5xl text-primary sm:text-6xl">
-        Stay in the loop.
-      </h1>
-      <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-        Occasional updates on new treatments, seasonal specials, and wellness tips — straight from the team. No spam, unsubscribe any time.
-      </p>
+    <section className="bg-gradient-to-b from-background to-card">
+      <div className="mx-auto max-w-4xl px-5 py-12 sm:px-6 lg:px-8">
+        <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-accent-foreground">
+          <Sparkles className="size-4 text-accent" />
+          Newsletter
+        </p>
+        <h1 className="mt-4 text-5xl text-primary sm:text-6xl">
+          Stay in the loop.
+        </h1>
+        <p className="mt-5 max-w-xl text-lg text-muted-foreground">
+          Occasional updates on new treatments, seasonal specials, and wellness tips — straight from the team. No spam, unsubscribe any time.
+        </p>
 
-      <div className="mt-10 max-w-sm">
-        <SubscribeForm />
+        <div className="mt-10 max-w-sm">
+          <SubscribeForm />
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
