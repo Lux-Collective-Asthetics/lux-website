@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { TurnstileWidget } from "@/components/turnstile-widget";
 import { cn } from "@/lib/utils";
 
 const initialState: ContactFormState = { status: "idle", message: "" };
@@ -97,13 +98,9 @@ export function ContactForm() {
         )}
       </div>
 
-      {turnstileSiteKey && (
-        <div
-          className="cf-turnstile"
-          data-sitekey={turnstileSiteKey}
-          data-theme="light"
-        />
-      )}
+      {turnstileSiteKey ? (
+        <TurnstileWidget siteKey={turnstileSiteKey} />
+      ) : null}
 
       <SubmitButton />
     </form>

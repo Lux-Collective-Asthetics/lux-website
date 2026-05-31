@@ -3,9 +3,11 @@ import Image from "next/image";
 import { ShieldCheck, Sparkles } from "lucide-react";
 
 import { BookButton } from "@/components/book-button";
-import { business, brandPrinciples, staff } from "@/content/site";
+import { business, brandPrinciples, staff as staticStaff } from "@/content/site";
 import { media } from "@/content/media";
 import { getBookingUrl } from "@/lib/booking";
+import { createClient } from "@/lib/supabase/server";
+import type { StaffMember } from "@/lib/types/db";
 
 export const metadata: Metadata = {
   title: "About",
@@ -19,8 +21,30 @@ export const metadata: Metadata = {
 };
 
 
-export default function AboutPage() {
+export default async function AboutPage() {
   const bookingUrl = getBookingUrl();
+  const supabase = await createClient();
+  const { data: staffData } = await supabase
+    .from("staff_members")
+    .select("*")
+    .eq("is_visible", true)
+    .order("display_order");
+
+  // Fall back to static data until DB migration is run
+  const staff: StaffMember[] = staffData && staffData.length > 0
+    ? (staffData as StaffMember[])
+    : staticStaff.map((m, i) => ({
+        id: m.name,
+        name: m.name,
+        credential: m.credential,
+        title: m.title,
+        bio: m.bio,
+        photo_url: m.photo ?? null,
+        booking_url: null,
+        display_order: i,
+        is_visible: true,
+        created_at: "",
+      }));
 
   return (
     <div>
@@ -102,32 +126,49 @@ export default function AboutPage() {
           </h2>
 
           <div className="mt-8 flex flex-col gap-4">
-            {staff.map((member) => (
+            {staff.map((member) => {
+              const initials = member.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
+              return (
               <article
-                key={member.name}
+                key={member.id}
                 className="flex gap-5 rounded-lg border border-primary-foreground/15 bg-primary-foreground/8 p-5"
               >
-                <div className="flex h-20 w-16 shrink-0 items-center justify-center rounded-lg bg-primary-foreground/10 text-sm font-semibold tracking-wide text-champagne">
-                  {member.initials}
+                <div className="relative flex h-20 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary-foreground/10 text-sm font-semibold tracking-wide text-champagne">
+                  {member.photo_url ? (
+                    <Image
+                      src={member.photo_url}
+                      alt={member.name}
+                      fill
+                      sizes="64px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    initials
+                  )}
                 </div>
-                <div>
+                <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-lg font-semibold text-primary-foreground">
                       {member.name}, {member.credential}
                     </h3>
-                    {member.isOwner && (
-                      <span className="rounded border border-champagne/30 bg-champagne/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-champagne">
-                        Co-owner
-                      </span>
-                    )}
                   </div>
                   <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-primary-foreground/55">
                     {member.title}
                   </p>
                   <p className="mt-3 text-sm text-primary-foreground/70">{member.bio}</p>
+                  {member.booking_url && (
+                    <a
+                      href={member.booking_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-flex items-center rounded-full border border-champagne/30 bg-champagne/10 px-4 py-1.5 text-xs font-medium text-champagne transition-colors hover:bg-champagne/20"
+                    >
+                      Book with {member.name.split(" ")[0]}
+                    </a>
+                  )}
                 </div>
               </article>
-            ))}
+            );})}
           </div>
         </div>
       </section>

@@ -10,8 +10,13 @@ const adminEmails = (process.env.ADMIN_EMAILS ?? "")
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const { searchParams } = url;
-  const trustedHost = ALLOWED_HOSTS.has(url.host) ? url.host : "theluxcollectiveaesthetics.com";
-  const origin = `${trustedHost.includes("localhost") ? "http" : "https"}://${trustedHost}`;
+  let origin: string;
+  if (process.env.NODE_ENV === "development") {
+    origin = "http://localhost:3000";
+  } else {
+    const trustedHost = ALLOWED_HOSTS.has(url.host) ? url.host : "theluxcollectiveaesthetics.com";
+    origin = `https://${trustedHost}`;
+  }
   const code = searchParams.get("code");
 
   if (!code) {

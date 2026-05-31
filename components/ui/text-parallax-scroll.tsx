@@ -94,7 +94,9 @@ function StickyImage({ imgSrc, imgAlt }: { imgSrc: string; imgAlt: string }) {
       style={{ height: `calc(100vh - ${IMG_PADDING * 2}px)`, top: IMG_PADDING, scale }}
       className="sticky z-0 overflow-hidden rounded-lg"
     >
-      <Image src={imgSrc} alt={imgAlt} fill className="object-cover" sizes="100vw" />
+      <div className="relative h-full w-full">
+        <Image src={imgSrc} alt={imgAlt} fill className="object-cover" sizes="100vw" />
+      </div>
       <motion.div className="absolute inset-0 bg-espresso/65" style={{ opacity }} />
     </motion.div>
   );

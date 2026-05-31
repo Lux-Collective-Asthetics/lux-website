@@ -3,8 +3,10 @@ import { Sparkles } from "lucide-react";
 
 import { ServiceSlideshow } from "@/components/service-slideshow";
 import { ServicesPricingSection } from "@/components/services-pricing-section";
-import { serviceGroups } from "@/content/site";
 import { getBookingUrl } from "@/lib/booking";
+import { createClient } from "@/lib/supabase/server";
+import { serviceGroups as staticServiceGroups } from "@/content/site";
+import type { ServiceGroup, Service } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "Services & Pricing",
@@ -27,8 +29,36 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
   const bookingUrl = getBookingUrl();
+
+  const supabase = await createClient();
+  const { data: dbServices } = await supabase
+    .from("services")
+    .select("*, service_price_lines(*)")
+    .eq("is_visible", true)
+    .order("display_order");
+
+  let serviceGroups = staticServiceGroups;
+
+  if (dbServices && dbServices.length > 0) {
+    const grouped: Record<string, ServiceGroup> = {};
+    for (const svc of dbServices) {
+      if (!grouped[svc.category]) {
+        grouped[svc.category] = { name: svc.category, services: [] };
+      }
+      const sortedPrices = [...(svc.service_price_lines as { label: string; price: string; display_order: number }[])]
+        .sort((a, b) => a.display_order - b.display_order);
+      const service: Service = {
+        name: svc.name,
+        summary: svc.summary,
+        duration: svc.duration ?? undefined,
+        priceLines: sortedPrices.map((pl) => pl.price ? `${pl.label}: ${pl.price}` : pl.label),
+      };
+      grouped[svc.category].services.push(service);
+    }
+    serviceGroups = Object.values(grouped);
+  }
 
   return (
     <>

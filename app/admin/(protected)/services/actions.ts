@@ -1,0 +1,70 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createServiceClient } from "@/lib/supabase/service";
+import { requireAdmin } from "@/lib/admin-auth";
+
+export async function updateService(
+  id: string,
+  data: { name: string; summary: string; duration: string; hero_image_url: string }
+) {
+  await requireAdmin();
+  const supabase = createServiceClient();
+  const { error } = await supabase
+    .from("services")
+    .update({
+      name: data.name,
+      summary: data.summary,
+      duration: data.duration || null,
+      hero_image_url: data.hero_image_url || null,
+    })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/services");
+}
+
+export async function toggleServiceVisibility(id: string, isVisible: boolean) {
+  await requireAdmin();
+  const supabase = createServiceClient();
+  const { error } = await supabase
+    .from("services")
+    .update({ is_visible: isVisible })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/services");
+}
+
+export async function upsertServicePriceLine(data: {
+  id?: string;
+  service_id: string;
+  label: string;
+  price: string;
+  display_order: number;
+}) {
+  await requireAdmin();
+  const supabase = createServiceClient();
+  if (data.id) {
+    const { error } = await supabase
+      .from("service_price_lines")
+      .update({ label: data.label, price: data.price, display_order: data.display_order })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabase.from("service_price_lines").insert({
+      service_id: data.service_id,
+      label: data.label,
+      price: data.price,
+      display_order: data.display_order,
+    });
+    if (error) throw new Error(error.message);
+  }
+  revalidatePath("/admin/services");
+}
+
+export async function deleteServicePriceLine(id: string) {
+  await requireAdmin();
+  const supabase = createServiceClient();
+  const { error } = await supabase.from("service_price_lines").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/services");
+}
