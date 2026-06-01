@@ -5,7 +5,6 @@ import { ServiceSlideshow } from "@/components/service-slideshow";
 import { ServicesPricingSection } from "@/components/services-pricing-section";
 import { getBookingUrl } from "@/lib/booking";
 import { createClient } from "@/lib/supabase/server";
-import { serviceGroups as staticServiceGroups } from "@/content/site";
 import type { ServiceGroup, Service } from "@/content/site";
 
 export const metadata: Metadata = {
@@ -39,8 +38,7 @@ export default async function ServicesPage() {
     .eq("is_visible", true)
     .order("display_order");
 
-  let serviceGroups = staticServiceGroups;
-
+  const serviceGroups: ServiceGroup[] = [];
   if (dbServices && dbServices.length > 0) {
     const grouped: Record<string, ServiceGroup> = {};
     for (const svc of dbServices) {
@@ -57,7 +55,7 @@ export default async function ServicesPage() {
       };
       grouped[svc.category].services.push(service);
     }
-    serviceGroups = Object.values(grouped);
+    serviceGroups.push(...Object.values(grouped));
   }
 
   return (
@@ -88,7 +86,13 @@ export default async function ServicesPage() {
       </div>
 
       {/* Service groups */}
-      <ServicesPricingSection bookingUrl={bookingUrl} serviceGroups={serviceGroups} />
+      {serviceGroups.length > 0 ? (
+        <ServicesPricingSection bookingUrl={bookingUrl} serviceGroups={serviceGroups} />
+      ) : (
+        <div className="mx-auto max-w-7xl px-5 py-20 text-center sm:px-6 lg:px-8">
+          <p className="text-muted-foreground">Services are being updated. Check back soon.</p>
+        </div>
+      )}
     </>
   );
 }

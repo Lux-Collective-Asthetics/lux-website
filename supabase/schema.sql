@@ -1,0 +1,104 @@
+-- Lux Collective — full database schema
+-- Run once in Supabase Dashboard → SQL Editor
+
+create table if not exists services (
+  id            uuid primary key default gen_random_uuid(),
+  name          text not null,
+  summary       text not null default '',
+  category      text not null,
+  duration      text,
+  hero_image_url text,
+  display_order integer not null default 0,
+  is_visible    boolean not null default true,
+  created_at    timestamptz not null default now()
+);
+
+create table if not exists service_price_lines (
+  id            uuid primary key default gen_random_uuid(),
+  service_id    uuid not null references services(id) on delete cascade,
+  label         text not null,
+  price         text not null default '',
+  display_order integer not null default 0
+);
+
+create table if not exists staff_members (
+  id            uuid primary key default gen_random_uuid(),
+  name          text not null,
+  credential    text not null default '',
+  title         text not null default '',
+  bio           text not null default '',
+  photo_url     text,
+  booking_url   text,
+  display_order integer not null default 0,
+  is_visible    boolean not null default true,
+  created_at    timestamptz not null default now()
+);
+
+create table if not exists staff_services (
+  staff_id   uuid not null references staff_members(id) on delete cascade,
+  service_id uuid not null references services(id) on delete cascade,
+  primary key (staff_id, service_id)
+);
+
+create table if not exists gallery_images (
+  id            uuid primary key default gen_random_uuid(),
+  title         text not null,
+  category      text not null,
+  before_url    text not null,
+  after_url     text not null,
+  caption       text,
+  display_order integer not null default 0,
+  is_visible    boolean not null default true,
+  created_at    timestamptz not null default now()
+);
+
+create table if not exists testimonials (
+  id            uuid primary key default gen_random_uuid(),
+  quote         text not null,
+  author        text not null,
+  photo_url     text,
+  is_visible    boolean not null default true,
+  display_order integer not null default 0,
+  created_at    timestamptz not null default now()
+);
+
+create table if not exists subscribers (
+  id              uuid primary key default gen_random_uuid(),
+  email           text not null unique,
+  status          text not null default 'active',
+  subscribed_at   timestamptz,
+  unsubscribed_at timestamptz,
+  created_at      timestamptz not null default now()
+);
+
+create table if not exists newsletter_sends (
+  id                   uuid primary key default gen_random_uuid(),
+  campaign_name        text not null,
+  subject              text not null,
+  resend_broadcast_id  text not null,
+  sent_at              timestamptz,
+  open_count           integer not null default 0,
+  click_count          integer not null default 0,
+  recipient_count      integer not null default 0,
+  created_at           timestamptz not null default now()
+);
+
+-- Enable Row Level Security on all tables
+alter table services           enable row level security;
+alter table service_price_lines enable row level security;
+alter table staff_members      enable row level security;
+alter table staff_services     enable row level security;
+alter table gallery_images     enable row level security;
+alter table testimonials       enable row level security;
+alter table subscribers        enable row level security;
+alter table newsletter_sends   enable row level security;
+
+-- Public read access for visible content
+create policy "public read services"        on services           for select using (is_visible = true);
+create policy "public read price lines"     on service_price_lines for select using (true);
+create policy "public read staff"           on staff_members      for select using (is_visible = true);
+create policy "public read staff_services"  on staff_services     for select using (true);
+create policy "public read gallery"         on gallery_images     for select using (is_visible = true);
+create policy "public read testimonials"    on testimonials       for select using (is_visible = true);
+
+-- Service role bypasses RLS (used by server actions and seed script)

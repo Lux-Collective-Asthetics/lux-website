@@ -31,13 +31,8 @@ export async function updateGalleryOrder(
 ) {
   await requireAdmin();
   const supabase = createServiceClient();
-  const results = await Promise.all(
-    items.map(({ id, display_order }) =>
-      supabase.from("gallery_images").update({ display_order }).eq("id", id)
-    )
-  );
-  const failed = results.find((r) => r.error);
-  if (failed?.error) throw new Error(failed.error.message);
+  const { error } = await supabase.from("gallery_images").upsert(items);
+  if (error) throw new Error(error.message);
   revalidatePath("/admin/gallery");
 }
 

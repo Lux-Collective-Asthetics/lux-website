@@ -3,7 +3,7 @@ import Image from "next/image";
 import { ShieldCheck, Sparkles } from "lucide-react";
 
 import { BookButton } from "@/components/book-button";
-import { business, brandPrinciples, staff as staticStaff } from "@/content/site";
+import { business, brandPrinciples } from "@/content/site";
 import { media } from "@/content/media";
 import { getBookingUrl } from "@/lib/booking";
 import { createClient } from "@/lib/supabase/server";
@@ -30,21 +30,7 @@ export default async function AboutPage() {
     .eq("is_visible", true)
     .order("display_order");
 
-  // Fall back to static data until DB migration is run
-  const staff: StaffMember[] = staffData && staffData.length > 0
-    ? (staffData as StaffMember[])
-    : staticStaff.map((m, i) => ({
-        id: m.name,
-        name: m.name,
-        credential: m.credential,
-        title: m.title,
-        bio: m.bio,
-        photo_url: m.photo ?? null,
-        booking_url: null,
-        display_order: i,
-        is_visible: true,
-        created_at: "",
-      }));
+  const staff = (staffData ?? []) as StaffMember[];
 
   return (
     <div>
@@ -73,7 +59,7 @@ export default async function AboutPage() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-[0.85fr_1.15fr] sm:items-end">
-            <div className="relative aspect-[4/5] overflow-hidden rounded-lg border border-border bg-background">
+            <div className="relative aspect-4/5 overflow-hidden rounded-lg border border-border bg-background">
               <Image
                 src={media.lounge.src}
                 alt={media.lounge.alt}
@@ -82,7 +68,7 @@ export default async function AboutPage() {
                 className="object-cover"
               />
             </div>
-            <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-background">
+            <div className="relative aspect-4/3 overflow-hidden rounded-lg border border-border bg-background">
               <Image
                 src={media.skinTreatment.src}
                 alt={media.skinTreatment.alt}
@@ -116,62 +102,65 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="border-y border-border bg-primary text-primary-foreground">
-        <div className="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-foreground/65">
-            Meet the team
-          </p>
-          <h2 className="mt-3 max-w-xl text-4xl">
-            The people behind every treatment.
-          </h2>
+      {staff.length > 0 && (
+        <section className="border-y border-border bg-primary text-primary-foreground">
+          <div className="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-foreground/65">
+              Meet the team
+            </p>
+            <h2 className="mt-3 max-w-xl text-4xl">
+              The people behind every treatment.
+            </h2>
 
-          <div className="mt-8 flex flex-col gap-4">
-            {staff.map((member) => {
-              const initials = member.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
-              return (
-              <article
-                key={member.id}
-                className="flex gap-5 rounded-lg border border-primary-foreground/15 bg-primary-foreground/8 p-5"
-              >
-                <div className="relative flex h-20 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary-foreground/10 text-sm font-semibold tracking-wide text-champagne">
-                  {member.photo_url ? (
-                    <Image
-                      src={member.photo_url}
-                      alt={member.name}
-                      fill
-                      sizes="64px"
-                      className="object-cover"
-                    />
-                  ) : (
-                    initials
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-lg font-semibold text-primary-foreground">
-                      {member.name}, {member.credential}
-                    </h3>
-                  </div>
-                  <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-primary-foreground/55">
-                    {member.title}
-                  </p>
-                  <p className="mt-3 text-sm text-primary-foreground/70">{member.bio}</p>
-                  {member.booking_url && (
-                    <a
-                      href={member.booking_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-3 inline-flex items-center rounded-full border border-champagne/30 bg-champagne/10 px-4 py-1.5 text-xs font-medium text-champagne transition-colors hover:bg-champagne/20"
-                    >
-                      Book with {member.name.split(" ")[0]}
-                    </a>
-                  )}
-                </div>
-              </article>
-            );})}
+            <div className="mt-8 flex flex-col gap-4">
+              {staff.map((member) => {
+                const initials = member.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
+                return (
+                  <article
+                    key={member.id}
+                    className="flex gap-5 rounded-lg border border-primary-foreground/15 bg-primary-foreground/8 p-5"
+                  >
+                    <div className="relative flex h-20 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary-foreground/10 text-sm font-semibold tracking-wide text-champagne">
+                      {member.photo_url ? (
+                        <Image
+                          src={member.photo_url}
+                          alt={member.name}
+                          fill
+                          sizes="64px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        initials
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-lg font-semibold text-primary-foreground">
+                          {member.name}, {member.credential}
+                        </h3>
+                      </div>
+                      <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-primary-foreground/55">
+                        {member.title}
+                      </p>
+                      <p className="mt-3 text-sm text-primary-foreground/70">{member.bio}</p>
+                      {member.booking_url && (
+                        <a
+                          href={member.booking_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-3 inline-flex items-center rounded-full border border-champagne/30 bg-champagne/10 px-4 py-1.5 text-xs font-medium text-champagne transition-colors hover:bg-champagne/20"
+                        >
+                          Book with {member.name.split(" ")[0]}
+                        </a>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

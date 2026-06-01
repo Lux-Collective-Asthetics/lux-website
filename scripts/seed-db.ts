@@ -2,6 +2,8 @@
  * One-time seed script: reads content/site.ts and inserts into Supabase.
  * Run with: npx tsx scripts/seed-db.ts
  * Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local
+ *
+ * Run supabase/schema.sql in the Supabase dashboard first if tables don't exist yet.
  */
 
 import { config } from "dotenv";
@@ -22,6 +24,16 @@ function parsePriceLine(line: string): { label: string; price: string } {
 }
 
 async function main() {
+  // Guard: skip if data already exists
+  const { count: serviceCount } = await supabase
+    .from("services")
+    .select("*", { count: "exact", head: true });
+
+  if (serviceCount && serviceCount > 0) {
+    console.log(`DB already has ${serviceCount} services — skipping seed. Delete existing rows first to re-seed.`);
+    return;
+  }
+
   console.log("Seeding services...");
   for (let gi = 0; gi < serviceGroups.length; gi++) {
     const group = serviceGroups[gi];
