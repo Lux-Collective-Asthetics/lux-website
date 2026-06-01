@@ -6,7 +6,12 @@ const noop = { limit: async (_id: string) => ({ success: true }) };
 const { UPSTASH_REDIS_REST_URL: url, UPSTASH_REDIS_REST_TOKEN: token } = process.env;
 
 function makeRatelimit(opts: { limiter: ReturnType<typeof Ratelimit.slidingWindow>; prefix: string }) {
-  if (!url) return noop;
+  if (!url) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("UPSTASH_REDIS_REST_URL is required in production");
+    }
+    return noop;
+  }
   if (!token) throw new Error("UPSTASH_REDIS_REST_TOKEN is required when UPSTASH_REDIS_REST_URL is set");
   return new Ratelimit({ redis: new Redis({ url, token }), ...opts });
 }

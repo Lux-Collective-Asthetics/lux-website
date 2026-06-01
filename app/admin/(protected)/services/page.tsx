@@ -10,10 +10,11 @@ import type { DbServiceWithPrices } from "@/lib/types/db";
 
 export default async function ServicesAdminPage() {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("services")
     .select("*, service_price_lines(*)")
     .order("display_order");
+  if (error) throw new Error(error.message);
 
   return (
     <ServicesClient

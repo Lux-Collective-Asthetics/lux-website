@@ -54,13 +54,28 @@ export function NewslettersClient({ initialSends, onCreate }: Props) {
     setSubmitting(true);
     setError(null);
     try {
+      const recipientCount = parseInt(recipients, 10) || 0;
       await onCreate({
         campaign_name: name,
         subject,
         resend_broadcast_id: broadcastId,
         sent_at: sentAt,
-        recipient_count: parseInt(recipients, 10) || 0,
+        recipient_count: recipientCount,
       });
+      setSends((prev) => [
+        {
+          id: crypto.randomUUID(),
+          campaign_name: name,
+          subject,
+          resend_broadcast_id: broadcastId,
+          sent_at: sentAt || null,
+          recipient_count: recipientCount,
+          open_count: 0,
+          click_count: 0,
+          created_at: new Date().toISOString(),
+        },
+        ...prev,
+      ]);
       setShowForm(false);
       setName("");
       setSubject("");

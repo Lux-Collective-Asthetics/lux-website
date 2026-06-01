@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Upload, ImageIcon, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +28,12 @@ export function ImageUpload({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
   const handleFile = useCallback(
     (f: File) => {
       setError(null);
@@ -36,7 +42,10 @@ export function ImageUpload({
         return;
       }
       setFile(f);
-      setPreview(URL.createObjectURL(f));
+      setPreview((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(f);
+      });
     },
     [maxMb]
   );
@@ -93,7 +102,16 @@ export function ImageUpload({
       )}
 
       <div
+        role="button"
+        tabIndex={0}
+        aria-label={label}
         onClick={() => inputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}

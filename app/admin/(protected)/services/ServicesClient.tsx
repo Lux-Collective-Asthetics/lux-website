@@ -164,11 +164,15 @@ function ServiceCard({
 
   async function handleAddPrice() {
     if (!newLabel) return;
+    const nextDisplayOrder =
+      svc.service_price_lines.length === 0
+        ? 0
+        : Math.max(...svc.service_price_lines.map((p) => p.display_order)) + 1;
     await onUpsertPriceLine({
       service_id: svc.id,
       label: newLabel,
       price: newPrice,
-      display_order: svc.service_price_lines.length,
+      display_order: nextDisplayOrder,
     });
     setNewLabel("");
     setNewPrice("");

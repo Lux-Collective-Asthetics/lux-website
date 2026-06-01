@@ -39,11 +39,10 @@ export async function subscribe(
   if (process.env.UPSTASH_REDIS_REST_URL) {
     try {
       const hdrs = await headers();
-      const ip =
-        hdrs.get("cf-connecting-ip") ??
-        hdrs.get("x-forwarded-for")?.split(",")[0].trim() ??
-        "anonymous";
-      const { success } = await newsletterRateLimit.limit(ip);
+      const forwarded = hdrs.get("x-forwarded-for")?.split(",")[0]?.trim();
+      const ip = hdrs.get("cf-connecting-ip") ?? forwarded;
+      const key = ip ? `ip:${ip}` : `email:${email}`;
+      const { success } = await newsletterRateLimit.limit(key);
       if (!success) {
         return { status: "error", message: "Too many requests. Please try again later." };
       }
@@ -83,7 +82,7 @@ export async function subscribe(
   }
 
   if (existing?.status === "active") {
-    return { status: "already", message: "You're already on the list." };
+    return { status: "success", message: "You're on the list. We'll be in touch." };
   }
 
   const now = new Date().toISOString();

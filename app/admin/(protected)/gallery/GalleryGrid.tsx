@@ -51,11 +51,17 @@ export function GalleryGrid({
 
     const oldIndex = images.findIndex((i) => i.id === active.id);
     const newIndex = images.findIndex((i) => i.id === over.id);
+    const prev = images;
     const reordered = arrayMove(images, oldIndex, newIndex);
     setImages(reordered);
-    await onReorder(
-      reordered.map((item, idx) => ({ id: item.id, display_order: idx }))
-    );
+    try {
+      await onReorder(
+        reordered.map((item, idx) => ({ id: item.id, display_order: idx }))
+      );
+    } catch {
+      setImages(prev);
+      throw;
+    }
   }
 
   async function handleDelete(id: string) {
@@ -84,7 +90,20 @@ export function GalleryGrid({
             <SortableCard
               key={image.id}
               image={image}
-              onToggleVisibility={onToggleVisibility}
+              onToggleVisibility={async (id, isVisible) => {
+                const prev = images;
+                setImages((curr) =>
+                  curr.map((img) =>
+                    img.id === id ? { ...img, is_visible: isVisible } : img
+                  )
+                );
+                try {
+                  await onToggleVisibility(id, isVisible);
+                } catch {
+                  setImages(prev);
+                  throw;
+                }
+              }}
               onDelete={handleDelete}
               isDeleting={deleting === image.id}
             />

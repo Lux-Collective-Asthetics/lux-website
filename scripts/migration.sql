@@ -97,7 +97,7 @@ CREATE POLICY "public read service_price_lines" ON service_price_lines FOR SELEC
 CREATE POLICY "public read staff_services"   ON staff_services   FOR SELECT USING (true);
 CREATE POLICY "public read testimonials"     ON testimonials      FOR SELECT USING (true);
 CREATE POLICY "public read gallery_images"   ON gallery_images   FOR SELECT USING (true);
-CREATE POLICY "public read newsletter_sends" ON newsletter_sends FOR SELECT USING (true);
+-- newsletter_sends is admin-only; no public SELECT policy.
 
 -- No authenticated-user write policies.
 -- All writes go through the service role key in API routes, which bypasses RLS entirely.

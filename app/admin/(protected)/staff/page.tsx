@@ -12,11 +12,17 @@ import type { StaffMember, DbService } from "@/lib/types/db";
 export default async function StaffAdminPage() {
   const supabase = await createClient();
 
-  const [{ data: staff }, { data: services }, { data: staffServices }] = await Promise.all([
+  const [staffRes, servicesRes, staffServicesRes] = await Promise.all([
     supabase.from("staff_members").select("*").order("display_order"),
     supabase.from("services").select("*").order("display_order"),
     supabase.from("staff_services").select("*"),
   ]);
+  if (staffRes.error) throw new Error(staffRes.error.message);
+  if (servicesRes.error) throw new Error(servicesRes.error.message);
+  if (staffServicesRes.error) throw new Error(staffServicesRes.error.message);
+  const { data: staff } = staffRes;
+  const { data: services } = servicesRes;
+  const { data: staffServices } = staffServicesRes;
 
   const staffServiceMap: Record<string, string[]> = {};
   for (const row of staffServices ?? []) {

@@ -17,7 +17,7 @@ type Props = {
     bio: string;
     photo_url: string;
     booking_url: string;
-  }) => Promise<void>;
+  }) => Promise<string>;
   onUpdate: (
     id: string,
     data: {
@@ -129,8 +129,10 @@ export function StaffClient({
     setError(null);
     try {
       if (panel.mode === "create") {
-        await onCreate(form);
-        // revalidatePath will refresh via the server action
+        const createdId = await onCreate(form);
+        if (form.service_ids.length > 0) {
+          await onUpdateServices(createdId, form.service_ids);
+        }
       } else if (panel.mode === "edit") {
         const id = panel.member.id;
         await onUpdate(id, form);
@@ -251,6 +253,7 @@ export function StaffClient({
             <div className="mt-3 flex gap-2">
               <button
                 type="button"
+                aria-label={member.is_visible ? "Hide staff member" : "Show staff member"}
                 onClick={() => handleToggle(member.id, member.is_visible)}
                 className={cn(
                   "rounded p-1.5",
@@ -267,6 +270,7 @@ export function StaffClient({
               </button>
               <button
                 type="button"
+                aria-label="Edit staff member"
                 onClick={() => openEdit(member)}
                 className="rounded p-1.5 text-muted-foreground hover:bg-muted"
               >
@@ -274,6 +278,7 @@ export function StaffClient({
               </button>
               <button
                 type="button"
+                aria-label="Delete staff member"
                 onClick={() => handleDelete(member.id)}
                 className="ml-auto rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
               >
@@ -298,7 +303,7 @@ export function StaffClient({
               <h2 className="text-lg font-semibold">
                 {panel.mode === "create" ? "Add Staff Member" : "Edit Staff Member"}
               </h2>
-              <button type="button" onClick={closePanel}>
+              <button type="button" aria-label="Close panel" onClick={closePanel}>
                 <X className="size-5 text-muted-foreground" />
               </button>
             </div>

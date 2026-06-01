@@ -13,9 +13,10 @@ export async function createGalleryImage(data: {
 }) {
   await requireAdmin();
   const supabase = createServiceClient();
-  const { count } = await supabase
+  const { count, error: countError } = await supabase
     .from("gallery_images")
     .select("*", { count: "exact", head: true });
+  if (countError) throw new Error(countError.message);
   const { error } = await supabase.from("gallery_images").insert({
     ...data,
     display_order: count ?? 0,
@@ -30,11 +31,13 @@ export async function updateGalleryOrder(
 ) {
   await requireAdmin();
   const supabase = createServiceClient();
-  await Promise.all(
+  const results = await Promise.all(
     items.map(({ id, display_order }) =>
       supabase.from("gallery_images").update({ display_order }).eq("id", id)
     )
   );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw new Error(failed.error.message);
   revalidatePath("/admin/gallery");
 }
 

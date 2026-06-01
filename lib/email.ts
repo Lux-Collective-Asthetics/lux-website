@@ -23,11 +23,12 @@ export async function sendContactEmail(data: ContactEmailData): Promise<void> {
 
   const resend = new Resend(apiKey);
 
-  await resend.emails.send({
+  const { error } = await resend.emails.send({
     from: "noreply@send.theluxcollectiveaesthetics.com",
     replyTo: data.email,
     to,
     subject: `New contact from ${data.name}`,
     text: `Name: ${data.name}\nEmail: ${data.email}\n\nMessage:\n${data.message}`,
   });
+  if (error) throw new Error(`Resend error: ${error.message}`);
 }

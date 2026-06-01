@@ -40,7 +40,7 @@ export const HoverSlider = React.forwardRef<
   const changeSlide = React.useCallback((i: number) => setActiveSlide(i), []);
   return (
     <HoverSliderContext.Provider value={{ activeSlide, changeSlide }}>
-      <div className={className}>{children}</div>
+      <div ref={ref as React.Ref<HTMLDivElement>} className={className} {...props}>{children}</div>
     </HoverSliderContext.Provider>
   );
 });
@@ -116,6 +116,7 @@ export const HoverSliderImage = React.forwardRef<
   const { activeSlide } = useHoverSliderContext();
   return (
     <motion.img
+      src={imageUrl}
       className={cn("inline-block align-middle", className)}
       transition={{ ease: [0.33, 1, 0.68, 1], duration: 0.8 }}
       variants={clipPathVariants}
