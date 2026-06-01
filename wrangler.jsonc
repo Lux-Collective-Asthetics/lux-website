@@ -22,7 +22,5 @@
   "observability": {
     "enabled": true
   },
-  "vars": {
-    "ADMIN_EMAILS": ""
-  }
+  "vars": {}
 }

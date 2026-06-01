@@ -12,7 +12,7 @@ const csp = [
   "img-src 'self' data: blob: https://ukmyjostwftmvyrciqrm.supabase.co",
   "connect-src 'self' https://*.supabase.co https://cloudflareinsights.com https://challenges.cloudflare.com",
   "frame-src https://challenges.cloudflare.com",
-  "trusted-types default",
+  "trusted-types nextjs#bundler default",
   "base-uri 'self'",
   "form-action 'self'",
 ].join("; ");
