@@ -58,9 +58,9 @@ export function GalleryGrid({
       await onReorder(
         reordered.map((item, idx) => ({ id: item.id, display_order: idx }))
       );
-    } catch {
+    } catch (err) {
       setImages(prev);
-      throw;
+      throw err;
     }
   }
 
@@ -99,9 +99,9 @@ export function GalleryGrid({
                 );
                 try {
                   await onToggleVisibility(id, isVisible);
-                } catch {
+                } catch (err) {
                   setImages(prev);
-                  throw;
+                  throw err;
                 }
               }}
               onDelete={handleDelete}
