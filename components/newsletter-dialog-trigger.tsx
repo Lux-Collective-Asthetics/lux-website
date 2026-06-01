@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Mail, X } from "lucide-react";
 
 import { SubscribeForm } from "@/components/subscribe-form";
@@ -20,6 +20,19 @@ export function NewsletterDialogTrigger({
   showIcon = false,
 }: NewsletterDialogTriggerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const wasOpenRef = useRef(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      wasOpenRef.current = true;
+      closeButtonRef.current?.focus();
+    } else if (wasOpenRef.current) {
+      wasOpenRef.current = false;
+      triggerRef.current?.focus();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -44,6 +57,7 @@ export function NewsletterDialogTrigger({
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setIsOpen(true)}
         className={cn("transition-colors hover:text-foreground", className)}
@@ -73,6 +87,7 @@ export function NewsletterDialogTrigger({
                 </h2>
               </div>
               <Button
+                ref={closeButtonRef}
                 type="button"
                 variant="outline"
                 size="icon"

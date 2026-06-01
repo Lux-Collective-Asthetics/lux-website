@@ -75,7 +75,7 @@ create table if not exists newsletter_sends (
   id                   uuid primary key default gen_random_uuid(),
   campaign_name        text not null,
   subject              text not null,
-  resend_broadcast_id  text not null,
+  resend_broadcast_id  text not null unique,
   sent_at              timestamptz,
   open_count           integer not null default 0,
   click_count          integer not null default 0,
@@ -114,3 +114,8 @@ grant all on all sequences in schema public to service_role;
 -- Anon/authenticated can read public content
 grant usage on schema public to anon, authenticated;
 grant select on all tables in schema public to anon, authenticated;
+
+-- Performance indexes for FK joins and ordered queries
+create index if not exists idx_service_price_lines_service_id on service_price_lines(service_id);
+create index if not exists idx_staff_services_service_id on staff_services(service_id);
+create index if not exists idx_gallery_images_display_order on gallery_images(display_order);
