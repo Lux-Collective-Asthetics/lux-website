@@ -90,14 +90,20 @@ ALTER TABLE testimonials      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE gallery_images   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE newsletter_sends ENABLE ROW LEVEL SECURITY;
 
--- Public read policies
-CREATE POLICY "public read staff_members"    ON staff_members    FOR SELECT USING (true);
-CREATE POLICY "public read services"         ON services         FOR SELECT USING (true);
-CREATE POLICY "public read service_price_lines" ON service_price_lines FOR SELECT USING (true);
-CREATE POLICY "public read staff_services"   ON staff_services   FOR SELECT USING (true);
-CREATE POLICY "public read testimonials"     ON testimonials      FOR SELECT USING (true);
-CREATE POLICY "public read gallery_images"   ON gallery_images   FOR SELECT USING (true);
+-- Public read policies (only visible rows exposed to anon clients)
+CREATE POLICY "public read staff_members"    ON staff_members    FOR SELECT USING (is_visible);
+CREATE POLICY "public read services"         ON services         FOR SELECT USING (is_visible);
+CREATE POLICY "public read service_price_lines" ON service_price_lines FOR SELECT
+  USING (EXISTS (SELECT 1 FROM services s WHERE s.id = service_price_lines.service_id AND s.is_visible));
+CREATE POLICY "public read staff_services"   ON staff_services   FOR SELECT
+  USING (EXISTS (SELECT 1 FROM staff_members sm WHERE sm.id = staff_services.staff_id AND sm.is_visible));
+CREATE POLICY "public read testimonials"     ON testimonials      FOR SELECT USING (is_visible);
+CREATE POLICY "public read gallery_images"   ON gallery_images   FOR SELECT USING (is_visible);
 -- newsletter_sends is admin-only; no public SELECT policy.
+
+-- Indexes on FK columns used in joins and RLS subqueries
+CREATE INDEX IF NOT EXISTS idx_service_price_lines_service_id ON service_price_lines(service_id);
+CREATE INDEX IF NOT EXISTS idx_staff_services_service_id ON staff_services(service_id);
 
 -- No authenticated-user write policies.
 -- All writes go through the service role key in API routes, which bypasses RLS entirely.

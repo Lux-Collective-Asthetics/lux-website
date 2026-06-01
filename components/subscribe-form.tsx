@@ -47,12 +47,6 @@ export function SubscribeForm() {
         </p>
       )}
 
-      {state.status === "already" && (
-        <p role="status" className="text-sm text-muted-foreground">
-          {state.message}
-        </p>
-      )}
-
       <div className="space-y-1.5">
         <Label htmlFor="sub-email">Email address</Label>
         <Input

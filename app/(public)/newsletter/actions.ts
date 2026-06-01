@@ -7,7 +7,7 @@ import { newsletterRateLimit } from "@/lib/redis";
 import { verifyTurnstile } from "@/lib/turnstile";
 
 export type SubscribeState = {
-  status: "idle" | "success" | "already" | "error";
+  status: "idle" | "success" | "error";
   message: string;
   errors?: { email?: string[] };
 };
