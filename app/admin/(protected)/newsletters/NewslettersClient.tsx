@@ -17,7 +17,7 @@ type Props = {
 };
 
 export function NewslettersClient({ initialSends, onCreate }: Props) {
-  const [sends] = useState(initialSends);
+  const [sends, setSends] = useState(initialSends);
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
