@@ -147,6 +147,7 @@ export function AdminSidebar({ user, onSignOut }: AdminSidebarProps) {
                         target="_blank"
                         rel="noopener noreferrer"
                         className={navItemClass}
+                        onClick={() => setMobileOpen(false)}
                       >
                         <item.icon className="size-5 shrink-0" />
                         {!collapsed && (
@@ -157,7 +158,7 @@ export function AdminSidebar({ user, onSignOut }: AdminSidebarProps) {
                         )}
                       </a>
                     ) : (
-                      <Link href={item.href} className={navItemClass}>
+                      <Link href={item.href} className={navItemClass} onClick={() => setMobileOpen(false)}>
                         <item.icon className="size-5 shrink-0" />
                         {!collapsed && <span className="truncate">{item.label}</span>}
                       </Link>

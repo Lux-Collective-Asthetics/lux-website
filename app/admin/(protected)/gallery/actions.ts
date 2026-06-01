@@ -13,13 +13,16 @@ export async function createGalleryImage(data: {
 }) {
   await requireAdmin();
   const supabase = createServiceClient();
-  const { count, error: countError } = await supabase
+  const { data: last, error: maxError } = await supabase
     .from("gallery_images")
-    .select("*", { count: "exact", head: true });
-  if (countError) throw new Error(countError.message);
+    .select("display_order")
+    .order("display_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (maxError) throw new Error(maxError.message);
   const { error } = await supabase.from("gallery_images").insert({
     ...data,
-    display_order: count ?? 0,
+    display_order: (last?.display_order ?? -1) + 1,
     is_visible: true,
   });
   if (error) throw new Error(error.message);

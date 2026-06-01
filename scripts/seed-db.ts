@@ -18,6 +18,11 @@ const supabase = createClient(
 );
 
 function parsePriceLine(line: string): { label: string; price: string } {
+  // Handle "Label: description - $price" format (e.g. "Small area: face, under arms - $75")
+  const dashPriceMatch = line.match(/^([^:]+):[^$]+-\s*(\$.+)$/);
+  if (dashPriceMatch) {
+    return { label: dashPriceMatch[1].trim(), price: dashPriceMatch[2].trim() };
+  }
   const colonIdx = line.indexOf(": ");
   if (colonIdx === -1) return { label: line, price: "" };
   return { label: line.slice(0, colonIdx), price: line.slice(colonIdx + 2) };

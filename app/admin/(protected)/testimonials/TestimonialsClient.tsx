@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Eye, EyeOff, Trash2, Pencil, X } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ export function TestimonialsClient({
   onDelete,
   onToggleVisibility,
 }: Props) {
+  const router = useRouter();
   const [items, setItems] = useState(initialTestimonials);
   const [panel, setPanel] = useState<PanelState>({ mode: "closed" });
   const [submitting, setSubmitting] = useState(false);
@@ -58,7 +60,7 @@ export function TestimonialsClient({
     try {
       if (panel.mode === "create") {
         await onCreate({ quote, author, photo_url: photoUrl });
-        // Optimistically can't add without id; page will revalidate
+        router.refresh();
       } else if (panel.mode === "edit") {
         await onUpdate(panel.testimonial.id, { quote, author, photo_url: photoUrl });
         setItems((prev) =>
@@ -142,7 +144,7 @@ export function TestimonialsClient({
                       ? "text-green-600 hover:bg-green-50"
                       : "text-muted-foreground hover:bg-muted"
                   )}
-                  title={t.is_visible ? "Hide" : "Show"}
+                  aria-label={t.is_visible ? "Hide testimonial" : "Show testimonial"}
                 >
                   {t.is_visible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
                 </button>
@@ -150,6 +152,7 @@ export function TestimonialsClient({
                   type="button"
                   onClick={() => openEdit(t)}
                   className="rounded p-1.5 text-muted-foreground hover:bg-muted"
+                  aria-label="Edit testimonial"
                 >
                   <Pencil className="size-4" />
                 </button>
@@ -157,6 +160,7 @@ export function TestimonialsClient({
                   type="button"
                   onClick={() => handleDelete(t.id)}
                   className="rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  aria-label="Delete testimonial"
                 >
                   <Trash2 className="size-4" />
                 </button>
@@ -177,7 +181,7 @@ export function TestimonialsClient({
               <h2 className="text-lg font-semibold">
                 {panel.mode === "create" ? "Add Testimonial" : "Edit Testimonial"}
               </h2>
-              <button type="button" onClick={closePanel}>
+              <button type="button" onClick={closePanel} aria-label="Close panel">
                 <X className="size-5 text-muted-foreground" />
               </button>
             </div>

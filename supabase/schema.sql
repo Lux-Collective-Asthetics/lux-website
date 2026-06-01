@@ -95,10 +95,22 @@ alter table newsletter_sends   enable row level security;
 
 -- Public read access for visible content
 create policy "public read services"        on services           for select using (is_visible = true);
-create policy "public read price lines"     on service_price_lines for select using (true);
+create policy "public read price lines"     on service_price_lines for select
+  using (exists (select 1 from services s where s.id = service_price_lines.service_id and s.is_visible));
 create policy "public read staff"           on staff_members      for select using (is_visible = true);
-create policy "public read staff_services"  on staff_services     for select using (true);
+create policy "public read staff_services"  on staff_services     for select
+  using (
+    exists (select 1 from staff_members sm where sm.id = staff_services.staff_id and sm.is_visible)
+    and exists (select 1 from services s where s.id = staff_services.service_id and s.is_visible)
+  );
 create policy "public read gallery"         on gallery_images     for select using (is_visible = true);
 create policy "public read testimonials"    on testimonials       for select using (is_visible = true);
 
 -- Service role bypasses RLS (used by server actions and seed script)
+grant usage on schema public to service_role;
+grant all on all tables in schema public to service_role;
+grant all on all sequences in schema public to service_role;
+
+-- Anon/authenticated can read public content
+grant usage on schema public to anon, authenticated;
+grant select on all tables in schema public to anon, authenticated;

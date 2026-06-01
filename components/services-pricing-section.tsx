@@ -185,12 +185,12 @@ function ServiceCard({
 function ServicePriceList({ service }: { service: Service }) {
   return (
     <div className="my-5 rounded-lg border border-border bg-background p-4">
-      {service.priceLines.map((price) => {
+      {service.priceLines.map((price, index) => {
         const item = priceLabel(price);
 
         return (
           <div
-            key={price}
+            key={index}
             className="flex items-baseline justify-between gap-4 border-b border-border/60 py-2 first:pt-0 last:border-0 last:pb-0"
           >
             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
