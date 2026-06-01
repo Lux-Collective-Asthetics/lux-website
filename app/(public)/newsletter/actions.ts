@@ -7,7 +7,7 @@ import { newsletterRateLimit } from "@/lib/redis";
 import { verifyTurnstile } from "@/lib/turnstile";
 
 export type SubscribeState = {
-  status: "idle" | "success" | "already" | "error";
+  status: "idle" | "success" | "error";
   message: string;
   errors?: { email?: string[] };
 };
@@ -16,6 +16,11 @@ export async function subscribe(
   _prev: SubscribeState,
   formData: FormData,
 ): Promise<SubscribeState> {
+  const website = (formData.get("website") as string | null)?.trim() ?? "";
+  if (website) {
+    return { status: "error", message: "Something went wrong. Please try again." };
+  }
+
   const email = (formData.get("email") as string | null)?.trim().toLowerCase() ?? "";
 
   const errors: SubscribeState["errors"] = {};
@@ -34,11 +39,10 @@ export async function subscribe(
   if (process.env.UPSTASH_REDIS_REST_URL) {
     try {
       const hdrs = await headers();
-      const ip =
-        hdrs.get("cf-connecting-ip") ??
-        hdrs.get("x-forwarded-for")?.split(",")[0].trim() ??
-        "anonymous";
-      const { success } = await newsletterRateLimit.limit(ip);
+      const forwarded = hdrs.get("x-forwarded-for")?.split(",")[0]?.trim();
+      const ip = hdrs.get("cf-connecting-ip") ?? forwarded;
+      const key = ip ? `ip:${ip}` : `email:${email}`;
+      const { success } = await newsletterRateLimit.limit(key);
       if (!success) {
         return { status: "error", message: "Too many requests. Please try again later." };
       }
@@ -78,7 +82,7 @@ export async function subscribe(
   }
 
   if (existing?.status === "active") {
-    return { status: "already", message: "You're already on the list." };
+    return { status: "success", message: "You're on the list. We'll be in touch." };
   }
 
   const now = new Date().toISOString();

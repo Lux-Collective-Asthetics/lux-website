@@ -8,6 +8,7 @@ import { subscribe, type SubscribeState } from "@/app/(public)/newsletter/action
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TurnstileWidget } from "@/components/turnstile-widget";
 import { cn } from "@/lib/utils";
 
 const initialState: SubscribeState = { status: "idle", message: "" };
@@ -31,14 +32,17 @@ export function SubscribeForm() {
 
   return (
     <form action={formAction} className="space-y-4" noValidate>
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        className="hidden"
+        aria-hidden="true"
+      />
+
       {state.status === "error" && !state.errors && (
         <p role="alert" className="text-sm text-destructive">
-          {state.message}
-        </p>
-      )}
-
-      {state.status === "already" && (
-        <p role="status" className="text-sm text-muted-foreground">
           {state.message}
         </p>
       )}
@@ -61,12 +65,17 @@ export function SubscribeForm() {
         )}
       </div>
 
-      {turnstileSiteKey && (
-        <div
-          className="cf-turnstile"
-          data-sitekey={turnstileSiteKey}
-          data-theme="light"
-        />
+      {turnstileSiteKey ? (
+        <div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Security check powered by Cloudflare Turnstile.
+          </p>
+          <TurnstileWidget siteKey={turnstileSiteKey} />
+        </div>
+      ) : (
+        <p className="rounded-lg border border-border bg-card p-3 text-xs text-muted-foreground">
+          Turnstile is not configured for this environment. Add NEXT_PUBLIC_TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY to enable the bot check.
+        </p>
       )}
 
       <SubmitButton />
@@ -83,7 +92,7 @@ function SubmitButton() {
       disabled={pending}
       className={cn(pending && "opacity-70")}
     >
-      {pending ? "Subscribing…" : "Subscribe"}
+      {pending ? "Subscribing..." : "Subscribe"}
     </Button>
   );
 }

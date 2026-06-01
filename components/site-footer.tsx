@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { NewsletterDialogTrigger } from "@/components/newsletter-dialog-trigger";
 import { business } from "@/content/site";
 
 export function SiteFooter() {
@@ -33,7 +34,9 @@ export function SiteFooter() {
             <li><Link href="/services" className="hover:text-primary-foreground transition-colors">Services &amp; Pricing</Link></li>
             <li><Link href="/about" className="hover:text-primary-foreground transition-colors">About</Link></li>
             <li><Link href="/contact" className="hover:text-primary-foreground transition-colors">Contact</Link></li>
-            <li><Link href="/newsletter" className="hover:text-primary-foreground transition-colors">Newsletter</Link></li>
+            <li>
+              <NewsletterDialogTrigger className="text-left hover:text-primary-foreground" />
+            </li>
           </ul>
         </div>
       </div>

@@ -1,19 +1,32 @@
 import type { NextConfig } from "next";
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
+const isDev = process.env.NODE_ENV === "development";
+
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://challenges.cloudflare.com",
+  // React dev mode requires unsafe-eval for call-stack reconstruction; never in production
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://static.cloudflareinsights.com https://challenges.cloudflare.com https://cdn.jsdelivr.net`,
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self'",
-  "img-src 'self' data: blob:",
-  "connect-src 'self' https://*.supabase.co https://cloudflareinsights.com",
+  "img-src 'self' data: blob: https://ukmyjostwftmvyrciqrm.supabase.co",
+  "connect-src 'self' https://*.supabase.co https://cloudflareinsights.com https://challenges.cloudflare.com",
   "frame-src https://challenges.cloudflare.com",
+  "trusted-types default",
   "base-uri 'self'",
   "form-action 'self'",
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "ukmyjostwftmvyrciqrm.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
   async headers() {
     return [
       {

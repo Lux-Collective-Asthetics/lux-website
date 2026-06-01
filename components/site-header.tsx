@@ -1,18 +1,23 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { BookButton } from "@/components/book-button";
+import { NewsletterDialogTrigger } from "@/components/newsletter-dialog-trigger";
 import { getBookingUrl } from "@/lib/booking";
+import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Services" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
-  { href: "/newsletter", label: "Newsletter" },
 ];
 
 export function SiteHeader() {
   const bookingUrl = getBookingUrl();
+  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/95 backdrop-blur">
@@ -28,19 +33,32 @@ export function SiteHeader() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <nav aria-label="Primary navigation">
             <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-medium text-muted-foreground">
-              {navItems.map((item) => (
-                <li key={item.href}>
-                  <Link className="transition-colors hover:text-foreground" href={item.href}>
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <li key={item.href}>
+                    <Link
+                      className={cn(
+                        "transition-colors hover:text-foreground",
+                        isActive && "border-b-2 border-accent font-semibold text-foreground"
+                      )}
+                      href={item.href}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+              <li>
+                <NewsletterDialogTrigger showIcon className="inline-flex items-center gap-1" />
+              </li>
             </ul>
           </nav>
           <BookButton
             bookingUrl={bookingUrl}
             label={bookingUrl ? "Book now" : "Request booking"}
             source="header"
+            className="rounded-full"
           />
         </div>
       </div>
