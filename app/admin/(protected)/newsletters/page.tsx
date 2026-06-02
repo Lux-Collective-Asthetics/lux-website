@@ -1,10 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { NewslettersClient } from "./NewslettersClient";
 import { createNewsletterSend } from "./actions";
 import type { NewsletterSend } from "@/lib/types/db";
 
 export default async function NewslettersAdminPage() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { data } = await supabase
     .from("newsletter_sends")
     .select("*")

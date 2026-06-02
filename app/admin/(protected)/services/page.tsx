@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { ServicesClient } from "./ServicesClient";
 import {
   updateService,
@@ -9,7 +9,7 @@ import {
 import type { DbServiceWithPrices } from "@/lib/types/db";
 
 export default async function ServicesAdminPage() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { data, error } = await supabase
     .from("services")
     .select("*, service_price_lines(*)")

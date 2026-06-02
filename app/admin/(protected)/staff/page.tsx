@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { StaffClient } from "./StaffClient";
 import {
   createStaffMember,
@@ -10,7 +10,7 @@ import {
 import type { StaffMember, DbService } from "@/lib/types/db";
 
 export default async function StaffAdminPage() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const [staffRes, servicesRes, staffServicesRes] = await Promise.all([
     supabase.from("staff_members").select("*").order("display_order"),

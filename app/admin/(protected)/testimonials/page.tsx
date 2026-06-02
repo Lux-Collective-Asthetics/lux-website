@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { TestimonialsClient } from "./TestimonialsClient";
 import {
   createTestimonial,
@@ -9,7 +9,7 @@ import {
 import type { DbTestimonial } from "@/lib/types/db";
 
 export default async function TestimonialsAdminPage() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { data } = await supabase
     .from("testimonials")
     .select("*")
