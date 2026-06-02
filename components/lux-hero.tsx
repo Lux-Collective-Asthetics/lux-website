@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion, type Variants } from "motion/react";
 import { ArrowRight, Clock, Mail, MapPin, Sparkles } from "lucide-react";
 
-import { BookButton } from "@/components/book-button";
+import { BookingCTA } from "@/components/booking-cta";
 import { business } from "@/content/site";
 
 
@@ -71,29 +71,16 @@ export function LuxHero({ bookingUrl }: { bookingUrl: string | null }) {
               {business.description}
             </motion.p>
 
-            <motion.div
-              variants={item}
-              className="mt-8 flex flex-col gap-3 sm:flex-row"
-            >
-              <BookButton bookingUrl={bookingUrl} source="home_hero" className="rounded-full" />
+            <motion.div variants={item} className="mt-8">
+              <BookingCTA bookingUrl={bookingUrl} source="home_hero" />
               <Link
                 href="/services"
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-border px-5 text-sm font-medium transition-colors hover:bg-muted"
+                className="mt-4 inline-flex h-9 items-center justify-center gap-2 rounded-full border border-border px-5 text-sm font-medium transition-colors hover:bg-muted"
               >
                 View services
                 <ArrowRight className="size-4" />
               </Link>
             </motion.div>
-
-            {!bookingUrl && (
-              <motion.p variants={item} className="mt-4 text-sm text-muted-foreground">
-                Online booking coming soon —{" "}
-                <a href={`tel:${business.phone.replace(/[^\d]/g, "")}`} className="underline underline-offset-2">
-                  call us at {business.phone}
-                </a>{" "}
-                to schedule.
-              </motion.p>
-            )}
           </div>{/* end left content */}
 
           {/* Right: hero photo */}
