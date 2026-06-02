@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Images, MessageSquare, Users, Send } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export default async function AdminDashboard() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const [
     { count: galleryCount },
@@ -11,9 +11,9 @@ export default async function AdminDashboard() {
     { count: subscriberCount },
     { data: lastNewsletter },
   ] = await Promise.all([
-    supabase.from("gallery_images").select("*", { count: "exact", head: true }).eq("is_visible", true),
-    supabase.from("testimonials").select("*", { count: "exact", head: true }).eq("is_visible", true),
-    supabase.from("newsletter_subscribers").select("*", { count: "exact", head: true }),
+    supabase.from("gallery_images").select("*", { count: "exact", head: true }),
+    supabase.from("testimonials").select("*", { count: "exact", head: true }),
+    supabase.from("subscribers").select("*", { count: "exact", head: true }),
     supabase.from("newsletter_sends").select("campaign_name").order("created_at", { ascending: false }).limit(1),
   ]);
 

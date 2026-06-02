@@ -96,7 +96,10 @@ CREATE POLICY "public read services"         ON services         FOR SELECT USIN
 CREATE POLICY "public read service_price_lines" ON service_price_lines FOR SELECT
   USING (EXISTS (SELECT 1 FROM services s WHERE s.id = service_price_lines.service_id AND s.is_visible));
 CREATE POLICY "public read staff_services"   ON staff_services   FOR SELECT
-  USING (EXISTS (SELECT 1 FROM staff_members sm WHERE sm.id = staff_services.staff_id AND sm.is_visible));
+  USING (
+    EXISTS (SELECT 1 FROM staff_members sm WHERE sm.id = staff_services.staff_id AND sm.is_visible)
+    AND EXISTS (SELECT 1 FROM services s WHERE s.id = staff_services.service_id AND s.is_visible)
+  );
 CREATE POLICY "public read testimonials"     ON testimonials      FOR SELECT USING (is_visible);
 CREATE POLICY "public read gallery_images"   ON gallery_images   FOR SELECT USING (is_visible);
 -- newsletter_sends is admin-only; no public SELECT policy.

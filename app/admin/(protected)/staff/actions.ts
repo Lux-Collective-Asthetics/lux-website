@@ -85,15 +85,35 @@ export async function toggleStaffVisibility(id: string, isVisible: boolean) {
 export async function updateStaffServices(staffId: string, serviceIds: string[]) {
   await requireAdmin();
   const supabase = createServiceClient();
-  // Delete existing and re-insert
-  const { error: deleteError } = await supabase.from("staff_services").delete().eq("staff_id", staffId);
-  if (deleteError) throw new Error(deleteError.message);
-  if (serviceIds.length > 0) {
-    const { error } = await supabase.from("staff_services").insert(
-      serviceIds.map((service_id) => ({ staff_id: staffId, service_id }))
-    );
+
+  const { data: current, error: fetchError } = await supabase
+    .from("staff_services")
+    .select("service_id")
+    .eq("staff_id", staffId);
+  if (fetchError) throw new Error(fetchError.message);
+
+  const currentIds = new Set(current?.map((r) => r.service_id) ?? []);
+  const nextIds = new Set(serviceIds);
+
+  const toRemove = [...currentIds].filter((id) => !nextIds.has(id));
+  const toAdd = [...nextIds].filter((id) => !currentIds.has(id));
+
+  if (toRemove.length > 0) {
+    const { error } = await supabase
+      .from("staff_services")
+      .delete()
+      .eq("staff_id", staffId)
+      .in("service_id", toRemove);
     if (error) throw new Error(error.message);
   }
+
+  if (toAdd.length > 0) {
+    const { error } = await supabase
+      .from("staff_services")
+      .insert(toAdd.map((service_id) => ({ staff_id: staffId, service_id })));
+    if (error) throw new Error(error.message);
+  }
+
   revalidatePath("/admin/staff");
   revalidatePath("/about");
 }

@@ -5,7 +5,7 @@ import { ServiceSlideshow } from "@/components/service-slideshow";
 import { ServicesPricingSection } from "@/components/services-pricing-section";
 import { getBookingUrl } from "@/lib/booking";
 import { createClient } from "@/lib/supabase/server";
-import { serviceGroups as staticServiceGroups } from "@/content/site";
+import { serviceGroups as defaultServiceGroups } from "@/content/site";
 import type { ServiceGroup, Service } from "@/content/site";
 
 export const metadata: Metadata = {
@@ -32,32 +32,40 @@ export const metadata: Metadata = {
 export default async function ServicesPage() {
   const bookingUrl = getBookingUrl();
 
-  const supabase = await createClient();
-  const { data: dbServices } = await supabase
-    .from("services")
-    .select("*, service_price_lines(*)")
-    .eq("is_visible", true)
-    .order("display_order");
+  let serviceGroups: ServiceGroup[] = [];
 
-  let serviceGroups = staticServiceGroups;
+  try {
+    const supabase = await createClient();
+    const { data: dbServices, error } = await supabase
+      .from("services")
+      .select("*, service_price_lines(*)")
+      .eq("is_visible", true)
+      .order("display_order");
 
-  if (dbServices && dbServices.length > 0) {
-    const grouped: Record<string, ServiceGroup> = {};
-    for (const svc of dbServices) {
-      if (!grouped[svc.category]) {
-        grouped[svc.category] = { name: svc.category, services: [] };
+    if (!error && dbServices && dbServices.length > 0) {
+      const grouped: Record<string, ServiceGroup> = {};
+      for (const svc of dbServices) {
+        if (!grouped[svc.category]) {
+          grouped[svc.category] = { name: svc.category, services: [] };
+        }
+        const sortedPrices = [...(svc.service_price_lines as { label: string; price: string; display_order: number }[])]
+          .sort((a, b) => a.display_order - b.display_order);
+        const service: Service = {
+          name: svc.name,
+          summary: svc.summary,
+          duration: svc.duration ?? undefined,
+          priceLines: sortedPrices.map((pl) => pl.price ? `${pl.label}: ${pl.price}` : pl.label),
+        };
+        grouped[svc.category].services.push(service);
       }
-      const sortedPrices = [...(svc.service_price_lines as { label: string; price: string; display_order: number }[])]
-        .sort((a, b) => a.display_order - b.display_order);
-      const service: Service = {
-        name: svc.name,
-        summary: svc.summary,
-        duration: svc.duration ?? undefined,
-        priceLines: sortedPrices.map((pl) => pl.price ? `${pl.label}: ${pl.price}` : pl.label),
-      };
-      grouped[svc.category].services.push(service);
+      serviceGroups.push(...Object.values(grouped));
     }
-    serviceGroups = Object.values(grouped);
+  } catch {
+    // Fall back to local static service definitions when Supabase is unavailable.
+  }
+
+  if (serviceGroups.length === 0) {
+    serviceGroups = defaultServiceGroups;
   }
 
   return (
@@ -88,7 +96,13 @@ export default async function ServicesPage() {
       </div>
 
       {/* Service groups */}
-      <ServicesPricingSection bookingUrl={bookingUrl} serviceGroups={serviceGroups} />
+      {serviceGroups.length > 0 ? (
+        <ServicesPricingSection bookingUrl={bookingUrl} serviceGroups={serviceGroups} />
+      ) : (
+        <div className="mx-auto max-w-7xl px-5 py-20 text-center sm:px-6 lg:px-8">
+          <p className="text-muted-foreground">Services are being updated. Check back soon.</p>
+        </div>
+      )}
     </>
   );
 }

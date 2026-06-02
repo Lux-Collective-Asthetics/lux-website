@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { GalleryGrid } from "./GalleryGrid";
 import { UploadGalleryModal } from "./UploadGalleryModal";
 import {
@@ -10,7 +10,7 @@ import {
 import type { GalleryImage } from "@/lib/types/db";
 
 export default async function GalleryAdminPage() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { data: images } = await supabase
     .from("gallery_images")
     .select("*")

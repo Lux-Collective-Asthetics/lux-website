@@ -25,15 +25,18 @@ declare global {
 export function TurnstileWidget({ siteKey }: { siteKey: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
+  const settled = useRef(false);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "unavailable">("loading");
   const [message, setMessage] = useState("Loading security check...");
 
   useEffect(() => {
+    settled.current = false;
     let attempts = 0;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     let iframeCheckId: ReturnType<typeof setTimeout> | null = null;
 
     const markUnavailable = (reason: string) => {
+      settled.current = true;
       setLoadState("unavailable");
       setMessage(reason);
     };
@@ -45,10 +48,10 @@ export function TurnstileWidget({ siteKey }: { siteKey: string }) {
         widgetId.current = window.turnstile.render(ref.current, {
           sitekey: siteKey,
           theme: "light",
-          callback: () => setLoadState("ready"),
+          callback: () => { settled.current = true; setLoadState("ready"); },
           "error-callback": () =>
-            markUnavailable("Security check failed to render. Check the Turnstile site key and allowed domains."),
-          "expired-callback": () => setLoadState("loading"),
+            markUnavailable("Security check failed. Make sure this domain is added to the Turnstile site key in Cloudflare."),
+          "expired-callback": () => { settled.current = false; setLoadState("loading"); },
           "timeout-callback": () =>
             markUnavailable("Security check timed out. Refresh this page and try again."),
           "unsupported-callback": () =>
@@ -56,8 +59,9 @@ export function TurnstileWidget({ siteKey }: { siteKey: string }) {
         });
 
         iframeCheckId = setTimeout(() => {
+          if (settled.current) return;
           if (!ref.current?.querySelector("iframe")) {
-            markUnavailable("Security check did not appear. Check that localhost is allowed for this Turnstile site key.");
+            markUnavailable("Security check did not appear. Check that this domain is allowed for the Turnstile site key.");
           } else {
             setLoadState("ready");
           }
