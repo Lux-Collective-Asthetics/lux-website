@@ -96,7 +96,7 @@ export async function updateStaffServices(staffId: string, serviceIds: string[])
   const nextIds = new Set(serviceIds);
 
   const toRemove = [...currentIds].filter((id) => !nextIds.has(id));
-  const toAdd = serviceIds.filter((id) => !currentIds.has(id));
+  const toAdd = [...nextIds].filter((id) => !currentIds.has(id));
 
   if (toRemove.length > 0) {
     const { error } = await supabase

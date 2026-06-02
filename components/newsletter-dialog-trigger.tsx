@@ -22,6 +22,7 @@ export function NewsletterDialogTrigger({
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const wasOpenRef = useRef(false);
 
   useEffect(() => {
@@ -32,6 +33,25 @@ export function NewsletterDialogTrigger({
       wasOpenRef.current = false;
       triggerRef.current?.focus();
     }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const FOCUSABLE = 'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+    const onTab = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const nodes = [...(dialogRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])];
+      if (nodes.length === 0) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    window.addEventListener("keydown", onTab);
+    return () => window.removeEventListener("keydown", onTab);
   }, [isOpen]);
 
   useEffect(() => {
@@ -59,6 +79,8 @@ export function NewsletterDialogTrigger({
       <button
         ref={triggerRef}
         type="button"
+        aria-haspopup="dialog"
+        aria-expanded={isOpen ? "true" : "false"}
         onClick={() => setIsOpen(true)}
         className={cn("transition-colors hover:text-foreground", className)}
       >
@@ -72,6 +94,7 @@ export function NewsletterDialogTrigger({
           role="presentation"
         >
           <div
+            ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="newsletter-dialog-title"
