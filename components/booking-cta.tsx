@@ -33,7 +33,8 @@ export function BookingCTA({
           "'Log In to Book' falls back to /contact.",
       );
     }
-  }, [bookingUrl]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // fire once on mount — bookingUrl comes from env and never changes at runtime
 
   const requestTrack = () =>
     track("book_click", { source, destination: "contact_new_patient" });
@@ -129,7 +130,12 @@ export function BookingCTA({
         <Link
           href="/contact"
           onClick={requestTrack}
-          className="mt-4 inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          className={cn(
+            "mt-4 inline-flex h-9 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors",
+            inv
+              ? "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+              : "bg-primary text-primary-foreground hover:bg-primary/90",
+          )}
         >
           Request an Appointment
         </Link>
@@ -150,7 +156,12 @@ export function BookingCTA({
           target={isExternal ? "_blank" : undefined}
           rel={isExternal ? "noopener noreferrer" : undefined}
           onClick={portalTrack}
-          className="mt-4 inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border px-4 text-sm font-medium text-primary transition-colors hover:bg-muted"
+          className={cn(
+            "mt-4 inline-flex h-9 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors",
+            inv
+              ? "border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
+              : "border border-border text-primary hover:bg-muted",
+          )}
         >
           Log In to Book
         </Link>
