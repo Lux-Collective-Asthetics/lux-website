@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Clock, Info, X } from "lucide-react";
 
-import { BookButton } from "@/components/book-button";
+import { BookingCTA } from "@/components/booking-cta";
 import { Button } from "@/components/ui/button";
 import type { Service, ServiceGroup } from "@/content/site";
 
@@ -106,11 +106,12 @@ export function ServicesPricingSection({ bookingUrl, serviceGroups }: ServicesPr
                 <p className="mt-4 border-t border-primary-foreground/15 pt-4 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground/70">
                   {group.services.length} services
                 </p>
-                <BookButton
+                <BookingCTA
                   bookingUrl={bookingUrl}
-                  label={bookingUrl ? "Book" : "Ask"}
                   source={`services_${group.name.toLowerCase().replaceAll(" ", "_")}`}
-                  className="mt-4 w-full !bg-primary-foreground !text-primary hover:!bg-primary-foreground/90"
+                  variant="stacked"
+                  colorScheme="inverted"
+                  className="mt-4"
                 />
               </div>
 
@@ -251,8 +252,8 @@ function ServiceDetailsModal({
               <DetailRow label="What to expect" value={details.prep} />
               <DetailRow label="Provider note" value={details.note} />
               <DetailRow
-                label="Booking"
-                value="Use the booking link when available, or send a general message for help choosing the right visit."
+                label="How to Book"
+                value="Submit a request through our contact form and a team member will follow up within 24 hours to confirm your appointment. Existing patients with a FollowMyHealth account can self-schedule from the portal."
               />
             </div>
           </div>
@@ -262,11 +263,11 @@ function ServiceDetailsModal({
               Pricing
             </p>
             <ServicePriceList service={selected.service} />
-            <BookButton
+            <BookingCTA
               bookingUrl={bookingUrl}
-              label={bookingUrl ? "Book this service" : "Ask about this"}
               source={`service_modal_${selected.service.name.toLowerCase().replaceAll(" ", "_")}`}
-              className="w-full"
+              variant="stacked"
+              className="mt-2"
             />
           </div>
         </div>

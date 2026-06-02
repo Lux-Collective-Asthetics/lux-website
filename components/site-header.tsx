@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { BookButton } from "@/components/book-button";
+import { BookingCTA } from "@/components/booking-cta";
 import { NewsletterDialogTrigger } from "@/components/newsletter-dialog-trigger";
 import { getBookingUrl } from "@/lib/booking";
 import { cn } from "@/lib/utils";
@@ -54,11 +54,10 @@ export function SiteHeader() {
               </li>
             </ul>
           </nav>
-          <BookButton
+          <BookingCTA
             bookingUrl={bookingUrl}
-            label={bookingUrl ? "Book now" : "Request booking"}
             source="header"
-            className="rounded-full"
+            variant="compact"
           />
         </div>
       </div>

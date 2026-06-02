@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Sparkles } from "lucide-react";
 
+import { HowBookingWorks } from "@/components/how-booking-works";
 import { PublicServicesPricing } from "@/components/public-services-pricing";
 import { ServiceSlideshow } from "@/components/service-slideshow";
 import { getBookingUrl } from "@/lib/booking";
@@ -95,6 +96,8 @@ export default async function ServicesPage() {
           </div>
         </div>
       </section>
+
+      <HowBookingWorks bookingUrl={bookingUrl} />
 
       {/* Service category slideshow */}
       <div className="mx-auto max-w-7xl">

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { ShieldCheck, Sparkles } from "lucide-react";
 
-import { BookButton } from "@/components/book-button";
+import { BookingCTA } from "@/components/booking-cta";
 import { PublicStaffSection } from "@/components/public-staff-section";
 import { business, brandPrinciples, staff as defaultStaff } from "@/content/site";
 import { media } from "@/content/media";
@@ -76,11 +76,11 @@ export default async function AboutPage() {
             <p className="mt-5 text-lg text-muted-foreground">
               {business.shortName} is built for clients who want science-backed treatments, clear guidance, and an experience that feels calm from the first conversation.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <BookButton bookingUrl={bookingUrl} source="about" className="rounded-full" />
+            <div className="mt-8">
+              <BookingCTA bookingUrl={bookingUrl} source="about" />
               <a
                 href="/services"
-                className="inline-flex h-9 items-center justify-center rounded-full border border-border px-5 text-sm font-medium transition-colors hover:bg-muted"
+                className="mt-4 inline-flex h-9 items-center justify-center rounded-full border border-border px-5 text-sm font-medium transition-colors hover:bg-muted"
               >
                 View services
               </a>
