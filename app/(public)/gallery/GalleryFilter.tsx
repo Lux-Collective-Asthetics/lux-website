@@ -4,8 +4,10 @@ import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import type { GalleryImage } from "@/lib/types/db";
+import { usePublicGalleryImages } from "@/lib/public-content-hooks";
 
-export function GalleryFilter({ images }: { images: GalleryImage[] }) {
+export function GalleryFilter({ images: initialImages }: { images: GalleryImage[] }) {
+  const { data: images } = usePublicGalleryImages(initialImages);
   const categories = ["All", ...Array.from(new Set(images.map((i) => i.category)))];
   const [active, setActive] = useState("All");
 

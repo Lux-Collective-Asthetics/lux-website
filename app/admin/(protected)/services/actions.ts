@@ -5,6 +5,12 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/admin-auth";
 import type { ServicePriceLine } from "@/lib/types/db";
 
+function revalidateServicePages() {
+  revalidatePath("/admin/services");
+  revalidatePath("/services");
+  revalidatePath("/");
+}
+
 export async function updateService(
   id: string,
   data: { name: string; summary: string; duration: string; hero_image_url: string }
@@ -21,7 +27,7 @@ export async function updateService(
     })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/services");
+  revalidateServicePages();
 }
 
 export async function toggleServiceVisibility(id: string, isVisible: boolean) {
@@ -32,7 +38,7 @@ export async function toggleServiceVisibility(id: string, isVisible: boolean) {
     .update({ is_visible: isVisible })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/services");
+  revalidateServicePages();
 }
 
 export async function upsertServicePriceLine(data: {
@@ -54,7 +60,7 @@ export async function upsertServicePriceLine(data: {
       .single();
 
     if (error) throw new Error(error.message);
-    revalidatePath("/admin/services");
+    revalidateServicePages();
     return updatedLine as ServicePriceLine;
   }
 
@@ -70,7 +76,7 @@ export async function upsertServicePriceLine(data: {
     .single();
 
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/services");
+  revalidateServicePages();
   return insertedLine as ServicePriceLine;
 }
 
@@ -79,5 +85,5 @@ export async function deleteServicePriceLine(id: string) {
   const supabase = createServiceClient();
   const { error } = await supabase.from("service_price_lines").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/services");
+  revalidateServicePages();
 }

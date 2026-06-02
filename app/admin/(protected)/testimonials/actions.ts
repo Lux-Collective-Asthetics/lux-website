@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/admin-auth";
 
+function revalidateTestimonialPages() {
+  revalidatePath("/admin/testimonials");
+  revalidatePath("/");
+}
+
 export async function createTestimonial(data: {
   quote: string;
   author: string;
@@ -21,7 +26,7 @@ export async function createTestimonial(data: {
     is_visible: true,
   });
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/testimonials");
+  revalidateTestimonialPages();
 }
 
 export async function updateTestimonial(
@@ -35,7 +40,7 @@ export async function updateTestimonial(
     .update({ quote: data.quote, author: data.author, photo_url: data.photo_url || null })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/testimonials");
+  revalidateTestimonialPages();
 }
 
 export async function toggleTestimonialVisibility(id: string, isVisible: boolean) {
@@ -46,7 +51,7 @@ export async function toggleTestimonialVisibility(id: string, isVisible: boolean
     .update({ is_visible: isVisible })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/testimonials");
+  revalidateTestimonialPages();
 }
 
 export async function deleteTestimonial(id: string) {
@@ -54,7 +59,7 @@ export async function deleteTestimonial(id: string) {
   const supabase = createServiceClient();
   const { error } = await supabase.from("testimonials").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/testimonials");
+  revalidateTestimonialPages();
 }
 
 export async function updateTestimonialOrder(
@@ -67,5 +72,5 @@ export async function updateTestimonialOrder(
       supabase.from("testimonials").update({ display_order }).eq("id", id)
     )
   );
-  revalidatePath("/admin/testimonials");
+  revalidateTestimonialPages();
 }

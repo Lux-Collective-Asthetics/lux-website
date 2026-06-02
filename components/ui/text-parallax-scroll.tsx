@@ -136,7 +136,7 @@ function InjectablesContent() {
       </h3>
       <div className="col-span-1 md:col-span-8">
         <p className="mb-4 text-lg text-muted-foreground md:text-xl">
-          Botox, Dysport, Xeomin, and Jeuveau start at $10 per unit, softening fine lines with a measured touch. Dermal fillers from $275 restore volume and contour where it counts, without the overdone look.
+          Neuromodulator and dermal filler appointments soften fine lines and restore volume with a measured touch.
         </p>
         <p className="mb-8 text-lg text-muted-foreground md:text-xl">
           Every injectable appointment starts with a provider consultation. The plan is built around your face, your goals, and your pace.
@@ -160,7 +160,7 @@ function LaserContent() {
       </h3>
       <div className="col-span-1 md:col-span-8">
         <p className="mb-4 text-lg text-muted-foreground md:text-xl">
-          IPL photo facials from $150 help even tone and texture. Laser hair removal targets unwanted hair by area, from $75 for small zones to $250 for large areas. Leg vein treatment addresses visible veins with precision, priced by count.
+          IPL photo facials help even tone and texture. Laser hair removal targets unwanted hair by treatment area, while leg vein treatments address visible veins with precision.
         </p>
         <p className="mb-8 text-lg text-muted-foreground md:text-xl">
           Add a PRP Vampire Facial for collagen and renewal support, combining microneedling with your own growth factors for skin quality that builds over time.
@@ -184,7 +184,7 @@ function WellnessContent() {
       </h3>
       <div className="col-span-1 md:col-span-8">
         <p className="mb-4 text-lg text-muted-foreground md:text-xl">
-          Medical weight loss with Semaglutide and Tirzepatide is supervised monthly by a provider. Hormone replacement therapy can be tailored through pellet, oral, or injectable options based on your labs and your life.
+          Medical weight loss and hormone replacement therapy are supervised by a provider and tailored around your labs, goals, and day-to-day life.
         </p>
         <p className="mb-8 text-lg text-muted-foreground md:text-xl">
           These are clinical care paths with real outcomes, delivered in a setting that actually feels good to be in. Every next step starts with a provider conversation.

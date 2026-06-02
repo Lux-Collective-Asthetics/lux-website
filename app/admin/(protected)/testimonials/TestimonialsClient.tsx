@@ -86,8 +86,14 @@ export function TestimonialsClient({
   }
 
   async function handleToggle(id: string, current: boolean) {
-    await onToggleVisibility(id, !current);
-    setItems((prev) => prev.map((t) => (t.id === id ? { ...t, is_visible: !current } : t)));
+    const nextVisible = !current;
+    setItems((prev) => prev.map((t) => (t.id === id ? { ...t, is_visible: nextVisible } : t)));
+    try {
+      await onToggleVisibility(id, nextVisible);
+    } catch (err) {
+      setItems((prev) => prev.map((t) => (t.id === id ? { ...t, is_visible: current } : t)));
+      setError(err instanceof Error ? err.message : "Failed to update visibility");
+    }
   }
 
   return (
@@ -115,7 +121,10 @@ export function TestimonialsClient({
           {items.map((t) => (
             <div
               key={t.id}
-              className="flex gap-4 rounded-lg border border-border bg-card p-4"
+              className={cn(
+                "flex gap-4 rounded-lg border border-border bg-card p-4",
+                !t.is_visible && "opacity-70"
+              )}
             >
               {t.photo_url && (
                 // eslint-disable-next-line @next/next/no-img-element
