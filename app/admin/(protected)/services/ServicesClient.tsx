@@ -19,7 +19,7 @@ type Props = {
     label: string;
     price: string;
     display_order: number;
-  }) => Promise<void>;
+  }) => Promise<ServicePriceLine>;
   onDeletePriceLine: (id: string) => Promise<void>;
 };
 
@@ -86,6 +86,59 @@ export function ServicesClient({
     );
   }
 
+  async function handleUpsertPriceLine(data: {
+    id?: string;
+    service_id: string;
+    label: string;
+    price: string;
+    display_order: number;
+  }): Promise<ServicePriceLine> {
+    setSaving(true);
+    try {
+      const updatedLine = await onUpsertPriceLine(data);
+      setLocalServices((prev) =>
+        prev.map((service) => {
+          if (service.id !== updatedLine.service_id) return service;
+          const existingLineIndex = service.service_price_lines.findIndex(
+            (line) => line.id === updatedLine.id
+          );
+          const updatedPriceLines = [...service.service_price_lines];
+          if (existingLineIndex >= 0) {
+            updatedPriceLines[existingLineIndex] = updatedLine;
+          } else {
+            updatedPriceLines.push(updatedLine);
+          }
+          return {
+            ...service,
+            service_price_lines: updatedPriceLines,
+          };
+        })
+      );
+      return updatedLine;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeletePriceLine(serviceId: string, id: string) {
+    setSaving(true);
+    try {
+      await onDeletePriceLine(id);
+      setLocalServices((prev) =>
+        prev.map((service) =>
+          service.id === serviceId
+            ? {
+                ...service,
+                service_price_lines: service.service_price_lines.filter((line) => line.id !== id),
+              }
+            : service
+        )
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div>
       <div className="mb-6">
@@ -121,8 +174,8 @@ export function ServicesClient({
                       )
                     }
                     onToggleVisibility={() => handleToggle(svc.id, svc.is_visible)}
-                    onUpsertPriceLine={onUpsertPriceLine}
-                    onDeletePriceLine={onDeletePriceLine}
+                    onUpsertPriceLine={handleUpsertPriceLine}
+                    onDeletePriceLine={(id) => handleDeletePriceLine(svc.id, id)}
                   />
                 ))}
             </div>
@@ -161,6 +214,9 @@ function ServiceCard({
   const [addingPrice, setAddingPrice] = useState(false);
   const [newLabel, setNewLabel] = useState("");
   const [newPrice, setNewPrice] = useState("");
+  const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
+  const [editingPriceLabel, setEditingPriceLabel] = useState("");
+  const [editingPriceValue, setEditingPriceValue] = useState("");
 
   async function handleAddPrice() {
     if (!newLabel) return;
@@ -177,6 +233,26 @@ function ServiceCard({
     setNewLabel("");
     setNewPrice("");
     setAddingPrice(false);
+  }
+
+  function startEditPriceLine(line: ServicePriceLine) {
+    setEditingPriceId(line.id);
+    setEditingPriceLabel(line.label);
+    setEditingPriceValue(line.price);
+  }
+
+  async function saveEditingPriceLine(line: ServicePriceLine) {
+    if (!editingPriceId) return;
+    await onUpsertPriceLine({
+      id: line.id,
+      service_id: svc.id,
+      label: editingPriceLabel,
+      price: editingPriceValue,
+      display_order: line.display_order,
+    });
+    setEditingPriceId(null);
+    setEditingPriceLabel("");
+    setEditingPriceValue("");
   }
 
   return (
@@ -290,19 +366,63 @@ function ServiceCard({
           .map((pl: ServicePriceLine) => (
             <div
               key={pl.id}
-              className="flex items-center gap-2 rounded bg-muted/50 px-2 py-1"
+              className="flex flex-wrap items-center gap-2 rounded bg-muted/50 px-2 py-1"
             >
-              <span className="flex-1 text-xs text-muted-foreground">{pl.label}</span>
-              {pl.price && (
-                <span className="text-xs font-medium">{pl.price}</span>
+              {editingPriceId === pl.id ? (
+                <>
+                  <input
+                    value={editingPriceLabel}
+                    onChange={(e) => setEditingPriceLabel(e.target.value)}
+                    placeholder="Label"
+                    className="min-w-[160px] rounded border border-border bg-background px-2 py-1 text-xs focus:outline-none"
+                  />
+                  <input
+                    value={editingPriceValue}
+                    onChange={(e) => setEditingPriceValue(e.target.value)}
+                    placeholder="Price"
+                    className="w-24 rounded border border-border bg-background px-2 py-1 text-xs focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    title="Save price line"
+                    onClick={() => saveEditingPriceLine(pl)}
+                    className="text-green-600"
+                  >
+                    <Check className="size-3" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Cancel edit"
+                    onClick={() => setEditingPriceId(null)}
+                    className="text-muted-foreground"
+                  >
+                    <X className="size-3" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="flex-1 text-xs text-muted-foreground">{pl.label}</span>
+                  {pl.price && (
+                    <span className="text-xs font-medium">{pl.price}</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => startEditPriceLine(pl)}
+                    className="text-muted-foreground hover:text-foreground"
+                    title="Edit price line"
+                  >
+                    <Pencil className="size-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDeletePriceLine(pl.id)}
+                    className="text-muted-foreground hover:text-destructive"
+                    title="Delete price line"
+                  >
+                    <X className="size-3" />
+                  </button>
+                </>
               )}
-              <button
-                type="button"
-                onClick={() => onDeletePriceLine(pl.id)}
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <X className="size-3" />
-              </button>
             </div>
           ))}
 

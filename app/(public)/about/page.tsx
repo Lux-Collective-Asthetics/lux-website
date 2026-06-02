@@ -3,7 +3,7 @@ import Image from "next/image";
 import { ShieldCheck, Sparkles } from "lucide-react";
 
 import { BookButton } from "@/components/book-button";
-import { business, brandPrinciples } from "@/content/site";
+import { business, brandPrinciples, staff as defaultStaff } from "@/content/site";
 import { media } from "@/content/media";
 import { getBookingUrl } from "@/lib/booking";
 import { createClient } from "@/lib/supabase/server";
@@ -23,14 +23,37 @@ export const metadata: Metadata = {
 
 export default async function AboutPage() {
   const bookingUrl = getBookingUrl();
-  const supabase = await createClient();
-  const { data: staffData } = await supabase
-    .from("staff_members")
-    .select("*")
-    .eq("is_visible", true)
-    .order("display_order");
 
-  const staff = (staffData ?? []) as StaffMember[];
+  let staff = [] as StaffMember[];
+  try {
+    const supabase = await createClient();
+    const { data: staffData, error } = await supabase
+      .from("staff_members")
+      .select("*")
+      .eq("is_visible", true)
+      .order("display_order");
+
+    if (!error) {
+      staff = (staffData ?? []) as StaffMember[];
+    }
+  } catch {
+    staff = [];
+  }
+
+  if (staff.length === 0) {
+    staff = defaultStaff.map((member, index) => ({
+      id: `static-${index}`,
+      name: member.name,
+      credential: member.credential,
+      title: member.title,
+      bio: member.bio,
+      photo_url: member.photo ?? null,
+      booking_url: null,
+      display_order: index,
+      is_visible: true,
+      created_at: new Date().toISOString(),
+    }));
+  }
 
   return (
     <div>

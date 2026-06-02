@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/admin-auth";
+import type { ServicePriceLine } from "@/lib/types/db";
 
 export async function updateService(
   id: string,
@@ -40,25 +41,37 @@ export async function upsertServicePriceLine(data: {
   label: string;
   price: string;
   display_order: number;
-}) {
+}): Promise<ServicePriceLine> {
   await requireAdmin();
   const supabase = createServiceClient();
+
   if (data.id) {
-    const { error } = await supabase
+    const { data: updatedLine, error } = await supabase
       .from("service_price_lines")
       .update({ label: data.label, price: data.price, display_order: data.display_order })
-      .eq("id", data.id);
+      .eq("id", data.id)
+      .select()
+      .single();
+
     if (error) throw new Error(error.message);
-  } else {
-    const { error } = await supabase.from("service_price_lines").insert({
+    revalidatePath("/admin/services");
+    return updatedLine as ServicePriceLine;
+  }
+
+  const { data: insertedLine, error } = await supabase
+    .from("service_price_lines")
+    .insert({
       service_id: data.service_id,
       label: data.label,
       price: data.price,
       display_order: data.display_order,
-    });
-    if (error) throw new Error(error.message);
-  }
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
   revalidatePath("/admin/services");
+  return insertedLine as ServicePriceLine;
 }
 
 export async function deleteServicePriceLine(id: string) {
