@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Serif_Display, Inter } from "next/font/google";
 import Script from "next/script";
 
+import { Providers } from "@/components/providers";
 import { business } from "@/content/site";
 import { siteUrl } from "@/lib/site-url";
 
@@ -42,7 +43,6 @@ export const metadata: Metadata = {
 };
 
 const cfBeaconToken = process.env.NEXT_PUBLIC_CF_BEACON_TOKEN;
-const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 export default function RootLayout({
   children,
@@ -55,13 +55,7 @@ export default function RootLayout({
       className={`${inter.variable} ${dmSerifDisplay.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
-        {turnstileSiteKey && (
-          <Script
-            src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-            strategy="afterInteractive"
-          />
-        )}
+        <Providers>{children}</Providers>
         {cfBeaconToken && (
           <Script
             src="https://static.cloudflareinsights.com/beacon.min.js"

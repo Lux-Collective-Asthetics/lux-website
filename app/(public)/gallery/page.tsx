@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { GalleryFilter } from "./GalleryFilter";
 import type { GalleryImage } from "@/lib/types/db";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Gallery",
   description:

@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { Sparkles } from "lucide-react";
 
+import { PublicServicesPricing } from "@/components/public-services-pricing";
 import { ServiceSlideshow } from "@/components/service-slideshow";
-import { ServicesPricingSection } from "@/components/services-pricing-section";
 import { getBookingUrl } from "@/lib/booking";
 import { createClient } from "@/lib/supabase/server";
 import { serviceGroups as defaultServiceGroups } from "@/content/site";
 import type { ServiceGroup, Service } from "@/content/site";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Services & Pricing",
@@ -33,6 +35,7 @@ export default async function ServicesPage() {
   const bookingUrl = getBookingUrl();
 
   let serviceGroups: ServiceGroup[] = [];
+  let shouldUseFallback = false;
 
   try {
     const supabase = await createClient();
@@ -42,7 +45,9 @@ export default async function ServicesPage() {
       .eq("is_visible", true)
       .order("display_order");
 
-    if (!error && dbServices && dbServices.length > 0) {
+    if (error) {
+      shouldUseFallback = true;
+    } else if (dbServices) {
       const grouped: Record<string, ServiceGroup> = {};
       for (const svc of dbServices) {
         if (!grouped[svc.category]) {
@@ -62,9 +67,10 @@ export default async function ServicesPage() {
     }
   } catch {
     // Fall back to local static service definitions when Supabase is unavailable.
+    shouldUseFallback = true;
   }
 
-  if (serviceGroups.length === 0) {
+  if (shouldUseFallback && serviceGroups.length === 0) {
     serviceGroups = defaultServiceGroups;
   }
 
@@ -96,13 +102,7 @@ export default async function ServicesPage() {
       </div>
 
       {/* Service groups */}
-      {serviceGroups.length > 0 ? (
-        <ServicesPricingSection bookingUrl={bookingUrl} serviceGroups={serviceGroups} />
-      ) : (
-        <div className="mx-auto max-w-7xl px-5 py-20 text-center sm:px-6 lg:px-8">
-          <p className="text-muted-foreground">Services are being updated. Check back soon.</p>
-        </div>
-      )}
+      <PublicServicesPricing bookingUrl={bookingUrl} initialServiceGroups={serviceGroups} />
     </>
   );
 }

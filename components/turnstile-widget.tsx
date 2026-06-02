@@ -1,5 +1,6 @@
 "use client";
 
+import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
 
 declare global {
@@ -92,6 +93,10 @@ export function TurnstileWidget({ siteKey }: { siteKey: string }) {
 
   return (
     <div className="rounded-lg border border-border bg-background p-3">
+      <Script
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+        strategy="afterInteractive"
+      />
       <div ref={ref} className="min-h-16.25" />
       {loadState === "loading" && (
         <p className="text-xs text-muted-foreground">{message}</p>

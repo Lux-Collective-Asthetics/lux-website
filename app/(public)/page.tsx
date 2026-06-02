@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 
+import { HomepageTestimonials } from "@/components/homepage-testimonials";
 import { LuxHero } from "@/components/lux-hero";
 import { RevealSection } from "@/components/shared/reveal-section";
-import { TestimonialsMarquee } from "@/components/ui/testimonial-marquee";
 import { LuxFeaturesScroll } from "@/components/ui/text-parallax-scroll";
-import { business, testimonials } from "@/content/site";
+import { business } from "@/content/site";
+import type { Testimonial } from "@/content/site";
 import { getBookingUrl } from "@/lib/booking";
 import { siteUrl } from "@/lib/site-url";
+import { createClient } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: `${business.name} | Newark, Ohio Med Spa`,
@@ -56,8 +60,27 @@ const localBusinessSchema = {
   priceRange: "$$",
 };
 
-export default function Home() {
+export default async function Home() {
   const bookingUrl = getBookingUrl();
+  let homepageTestimonials: Testimonial[] = [];
+
+  try {
+    const supabase = await createClient();
+    const { data: dbTestimonials, error } = await supabase
+      .from("testimonials")
+      .select("quote, author")
+      .eq("is_visible", true)
+      .order("display_order");
+
+    if (!error && dbTestimonials) {
+      homepageTestimonials = dbTestimonials.map((testimonial: { quote: string; author: string }) => ({
+        quote: testimonial.quote,
+        author: testimonial.author,
+      }));
+    }
+  } catch {
+    homepageTestimonials = [];
+  }
 
   return (
     <>
@@ -74,7 +97,7 @@ export default function Home() {
 
       {/* Testimonials */}
       <RevealSection>
-        <TestimonialsMarquee testimonials={testimonials} />
+        <HomepageTestimonials initialTestimonials={homepageTestimonials} />
       </RevealSection>
     </>
   );

@@ -3,11 +3,14 @@ import Image from "next/image";
 import { ShieldCheck, Sparkles } from "lucide-react";
 
 import { BookButton } from "@/components/book-button";
+import { PublicStaffSection } from "@/components/public-staff-section";
 import { business, brandPrinciples, staff as defaultStaff } from "@/content/site";
 import { media } from "@/content/media";
 import { getBookingUrl } from "@/lib/booking";
 import { createClient } from "@/lib/supabase/server";
 import type { StaffMember } from "@/lib/types/db";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "About",
@@ -25,6 +28,7 @@ export default async function AboutPage() {
   const bookingUrl = getBookingUrl();
 
   let staff = [] as StaffMember[];
+  let shouldUseFallback = false;
   try {
     const supabase = await createClient();
     const { data: staffData, error } = await supabase
@@ -35,12 +39,14 @@ export default async function AboutPage() {
 
     if (!error) {
       staff = (staffData ?? []) as StaffMember[];
+    } else {
+      shouldUseFallback = true;
     }
   } catch {
-    staff = [];
+    shouldUseFallback = true;
   }
 
-  if (staff.length === 0) {
+  if (shouldUseFallback && staff.length === 0) {
     staff = defaultStaff.map((member, index) => ({
       id: `static-${index}`,
       name: member.name,
@@ -125,65 +131,7 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {staff.length > 0 && (
-        <section className="border-y border-border bg-primary text-primary-foreground">
-          <div className="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-foreground/65">
-              Meet the team
-            </p>
-            <h2 className="mt-3 max-w-xl text-4xl">
-              The people behind every treatment.
-            </h2>
-
-            <div className="mt-8 flex flex-col gap-4">
-              {staff.map((member) => {
-                const initials = member.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
-                return (
-                  <article
-                    key={member.id}
-                    className="flex gap-5 rounded-lg border border-primary-foreground/15 bg-primary-foreground/8 p-5"
-                  >
-                    <div className="relative flex h-20 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary-foreground/10 text-sm font-semibold tracking-wide text-champagne">
-                      {member.photo_url ? (
-                        <Image
-                          src={member.photo_url}
-                          alt={member.name}
-                          fill
-                          sizes="64px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        initials
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-semibold text-primary-foreground">
-                          {member.name}, {member.credential}
-                        </h3>
-                      </div>
-                      <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-primary-foreground/55">
-                        {member.title}
-                      </p>
-                      <p className="mt-3 text-sm text-primary-foreground/70">{member.bio}</p>
-                      {member.booking_url && (
-                        <a
-                          href={member.booking_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-3 inline-flex items-center rounded-full border border-champagne/30 bg-champagne/10 px-4 py-1.5 text-xs font-medium text-champagne transition-colors hover:bg-champagne/20"
-                        >
-                          Book with {member.name.split(" ")[0]}
-                        </a>
-                      )}
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
+      <PublicStaffSection initialStaff={staff} />
     </div>
   );
 }

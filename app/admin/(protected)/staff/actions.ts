@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/admin-auth";
 
+function revalidateStaffPages() {
+  revalidatePath("/admin/staff");
+  revalidatePath("/about");
+}
+
 export async function createStaffMember(data: {
   name: string;
   credential: string;
@@ -28,8 +33,7 @@ export async function createStaffMember(data: {
     is_visible: true,
   }).select("id").single();
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/staff");
-  revalidatePath("/about");
+  revalidateStaffPages();
   return inserted.id;
 }
 
@@ -58,8 +62,7 @@ export async function updateStaffMember(
     })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/staff");
-  revalidatePath("/about");
+  revalidateStaffPages();
 }
 
 export async function deleteStaffMember(id: string) {
@@ -67,8 +70,7 @@ export async function deleteStaffMember(id: string) {
   const supabase = createServiceClient();
   const { error } = await supabase.from("staff_members").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/staff");
-  revalidatePath("/about");
+  revalidateStaffPages();
 }
 
 export async function toggleStaffVisibility(id: string, isVisible: boolean) {
@@ -79,7 +81,7 @@ export async function toggleStaffVisibility(id: string, isVisible: boolean) {
     .update({ is_visible: isVisible })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/staff");
+  revalidateStaffPages();
 }
 
 export async function updateStaffServices(staffId: string, serviceIds: string[]) {
@@ -114,6 +116,5 @@ export async function updateStaffServices(staffId: string, serviceIds: string[])
     if (error) throw new Error(error.message);
   }
 
-  revalidatePath("/admin/staff");
-  revalidatePath("/about");
+  revalidateStaffPages();
 }

@@ -104,6 +104,16 @@ CREATE POLICY "public read testimonials"     ON testimonials      FOR SELECT USI
 CREATE POLICY "public read gallery_images"   ON gallery_images   FOR SELECT USING (is_visible);
 -- newsletter_sends is admin-only; no public SELECT policy.
 
+-- Table privileges required before RLS policies can allow public reads.
+-- Without these grants, anon requests fail with "permission denied for table ...".
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT SELECT ON staff_members TO anon, authenticated;
+GRANT SELECT ON services TO anon, authenticated;
+GRANT SELECT ON service_price_lines TO anon, authenticated;
+GRANT SELECT ON staff_services TO anon, authenticated;
+GRANT SELECT ON testimonials TO anon, authenticated;
+GRANT SELECT ON gallery_images TO anon, authenticated;
+
 -- Indexes on FK columns used in joins and RLS subqueries
 CREATE INDEX IF NOT EXISTS idx_service_price_lines_service_id ON service_price_lines(service_id);
 CREATE INDEX IF NOT EXISTS idx_staff_services_service_id ON staff_services(service_id);
