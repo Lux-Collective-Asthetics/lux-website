@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { GalleryFilter } from "./GalleryFilter";
-import type { GalleryImage } from "@/lib/types/db";
+import type { GalleryImage, ServiceCategory } from "@/lib/types/db";
 
 export const dynamic = "force-dynamic";
 
@@ -18,18 +18,22 @@ export const metadata: Metadata = {
 
 export default async function GalleryPage() {
   let images: GalleryImage[] = [];
+  let serviceCategories: ServiceCategory[] = [];
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("gallery_images")
-      .select("*")
-      .eq("is_visible", true)
-      .order("display_order");
+    const [imagesRes, categoriesRes] = await Promise.all([
+      supabase.from("gallery_images").select("*").eq("is_visible", true).order("display_order"),
+      supabase.from("service_categories").select("*").order("display_order"),
+    ]);
 
-    if (error) {
-      console.error("Failed to fetch gallery images:", error.message);
+    if (imagesRes.error) {
+      console.error("Failed to fetch gallery images:", imagesRes.error.message);
     } else {
-      images = (data ?? []) as GalleryImage[];
+      images = (imagesRes.data ?? []) as GalleryImage[];
+    }
+
+    if (!categoriesRes.error) {
+      serviceCategories = (categoriesRes.data ?? []) as ServiceCategory[];
     }
   } catch (err) {
     console.error("Gallery fetch exception:", err);
@@ -53,7 +57,7 @@ export default async function GalleryPage() {
         </div>
       ) : (
         <>
-          <GalleryFilter images={images} />
+          <GalleryFilter images={images} serviceCategories={serviceCategories} />
           <p className="mt-10 text-center text-xs text-muted-foreground">
             Images are of real Lux Collective clients. Results may vary.
           </p>
