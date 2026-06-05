@@ -1,5 +1,5 @@
 import type { Service, ServiceGroup, Testimonial } from "@/content/site";
-import type { GalleryImage, StaffMember } from "@/lib/types/db";
+import type { AboutGalleryPhoto, GalleryImage, StaffMember } from "@/lib/types/db";
 import { createClient } from "@/lib/supabase/client";
 
 type DbServicePriceLine = {
@@ -27,6 +27,7 @@ export const publicContentQueryKeys = {
   services: ["public-content", "services"] as const,
   staff: ["public-content", "staff"] as const,
   gallery: ["public-content", "gallery"] as const,
+  aboutGallery: ["public-content", "about-gallery"] as const,
 };
 
 export function mapDbServicesToServiceGroups(dbServices: DbService[]) {
@@ -107,4 +108,17 @@ export async function fetchVisibleGalleryImages() {
   if (error) throw new Error(error.message);
 
   return (data ?? []) as GalleryImage[];
+}
+
+export async function fetchVisibleAboutGallery() {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("about_gallery")
+    .select("*")
+    .eq("is_visible", true)
+    .order("display_order");
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []) as AboutGalleryPhoto[];
 }

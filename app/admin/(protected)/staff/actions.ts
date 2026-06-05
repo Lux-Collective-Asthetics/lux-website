@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/admin-auth";
+import type { StaffPhoto } from "@/lib/types/db";
 
 function revalidateStaffPages() {
   revalidatePath("/admin/staff");
@@ -82,6 +83,43 @@ export async function toggleStaffVisibility(id: string, isVisible: boolean) {
     .eq("id", id);
   if (error) throw new Error(error.message);
   revalidateStaffPages();
+}
+
+export async function addStaffPhoto(staffId: string, photoUrl: string): Promise<StaffPhoto> {
+  await requireAdmin();
+  const supabase = createServiceClient();
+  const { count } = await supabase
+    .from("staff_photos")
+    .select("*", { count: "exact", head: true })
+    .eq("staff_id", staffId);
+  const { data, error } = await supabase
+    .from("staff_photos")
+    .insert({ staff_id: staffId, photo_url: photoUrl, display_order: count ?? 0 })
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  revalidatePath("/about");
+  return data as StaffPhoto;
+}
+
+export async function deleteStaffPhoto(photoId: string) {
+  await requireAdmin();
+  const supabase = createServiceClient();
+  const { error } = await supabase.from("staff_photos").delete().eq("id", photoId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/about");
+}
+
+export async function getStaffPhotos(staffId: string): Promise<StaffPhoto[]> {
+  await requireAdmin();
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("staff_photos")
+    .select("*")
+    .eq("staff_id", staffId)
+    .order("display_order");
+  if (error) throw new Error(error.message);
+  return (data ?? []) as StaffPhoto[];
 }
 
 export async function updateStaffServices(staffId: string, serviceIds: string[]) {

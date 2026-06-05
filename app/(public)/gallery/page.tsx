@@ -17,14 +17,23 @@ export const metadata: Metadata = {
 };
 
 export default async function GalleryPage() {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("gallery_images")
-    .select("*")
-    .eq("is_visible", true)
-    .order("display_order");
+  let images: GalleryImage[] = [];
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("gallery_images")
+      .select("*")
+      .eq("is_visible", true)
+      .order("display_order");
 
-  const images = (data ?? []) as GalleryImage[];
+    if (error) {
+      console.error("Failed to fetch gallery images:", error.message);
+    } else {
+      images = (data ?? []) as GalleryImage[];
+    }
+  } catch (err) {
+    console.error("Gallery fetch exception:", err);
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8">

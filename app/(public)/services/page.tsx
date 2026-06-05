@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { Sparkles } from "lucide-react";
 
-import { HowBookingWorks } from "@/components/how-booking-works";
 import { PublicServicesPricing } from "@/components/public-services-pricing";
 import { ServiceSlideshow } from "@/components/service-slideshow";
-import { getBookingUrl } from "@/lib/booking";
 import { createClient } from "@/lib/supabase/server";
 import { serviceGroups as defaultServiceGroups } from "@/content/site";
 import type { ServiceGroup, Service } from "@/content/site";
@@ -33,8 +31,6 @@ export const metadata: Metadata = {
 };
 
 export default async function ServicesPage() {
-  const bookingUrl = getBookingUrl();
-
   let serviceGroups: ServiceGroup[] = [];
   let shouldUseFallback = false;
 
@@ -67,7 +63,6 @@ export default async function ServicesPage() {
       serviceGroups.push(...Object.values(grouped));
     }
   } catch {
-    // Fall back to local static service definitions when Supabase is unavailable.
     shouldUseFallback = true;
   }
 
@@ -78,7 +73,7 @@ export default async function ServicesPage() {
   return (
     <>
       {/* Gradient hero */}
-      <section className="relative flex min-h-[380px] items-center overflow-hidden bg-[linear-gradient(145deg,var(--cream),var(--blush))]">
+      <section className="relative flex min-h-95 items-center overflow-hidden bg-[linear-gradient(145deg,var(--cream),var(--blush))]">
         <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-12 size-72 rounded-full bg-blush opacity-45" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 left-12 size-52 rounded-full bg-taupe opacity-35" />
         <div className="relative z-10 mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8">
@@ -97,15 +92,13 @@ export default async function ServicesPage() {
         </div>
       </section>
 
-      <HowBookingWorks bookingUrl={bookingUrl} />
-
       {/* Service category slideshow */}
       <div className="mx-auto max-w-7xl">
         <ServiceSlideshow />
       </div>
 
       {/* Service groups */}
-      <PublicServicesPricing bookingUrl={bookingUrl} initialServiceGroups={serviceGroups} />
+      <PublicServicesPricing initialServiceGroups={serviceGroups} />
     </>
   );
 }

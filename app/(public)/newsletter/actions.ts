@@ -7,7 +7,7 @@ import { newsletterRateLimit } from "@/lib/redis";
 import { verifyTurnstile } from "@/lib/turnstile";
 
 export type SubscribeState = {
-  status: "idle" | "success" | "error";
+  status: "idle" | "success" | "error" | "already_subscribed";
   message: string;
   errors?: { email?: string[] };
 };
@@ -82,7 +82,10 @@ export async function subscribe(
   }
 
   if (existing?.status === "active") {
-    return { status: "success", message: "You're on the list. We'll be in touch." };
+    return {
+      status: "already_subscribed",
+      message: "This email is already subscribed. No changes were made.",
+    };
   }
 
   const now = new Date().toISOString();

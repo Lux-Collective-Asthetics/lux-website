@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Clock, Info, X } from "lucide-react";
 
-import { BookingCTA } from "@/components/booking-cta";
 import { Button } from "@/components/ui/button";
 import type { Service, ServiceGroup } from "@/content/site";
 
@@ -13,7 +12,6 @@ type SelectedService = {
 };
 
 type ServicesPricingSectionProps = {
-  bookingUrl: string | null;
   serviceGroups: ServiceGroup[];
 };
 
@@ -33,7 +31,6 @@ function priceLabel(price: string) {
   if (!value) {
     return { label: "Starting at", value: price };
   }
-
   return { label, value };
 }
 
@@ -60,23 +57,16 @@ function detailCopy(service: Service, groupName: string) {
   };
 }
 
-export function ServicesPricingSection({ bookingUrl, serviceGroups }: ServicesPricingSectionProps) {
+export function ServicesPricingSection({ serviceGroups }: ServicesPricingSectionProps) {
   const [selected, setSelected] = useState<SelectedService | null>(null);
 
   useEffect(() => {
-    if (!selected) {
-      return;
-    }
-
+    if (!selected) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setSelected(null);
-      }
+      if (event.key === "Escape") setSelected(null);
     };
-
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeyDown);
-
     return () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKeyDown);
@@ -106,13 +96,6 @@ export function ServicesPricingSection({ bookingUrl, serviceGroups }: ServicesPr
                 <p className="mt-4 border-t border-primary-foreground/15 pt-4 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground/70">
                   {group.services.length} services
                 </p>
-                <BookingCTA
-                  bookingUrl={bookingUrl}
-                  source={`services_${group.name.toLowerCase().replaceAll(" ", "_")}`}
-                  variant="stacked"
-                  colorScheme="inverted"
-                  className="mt-4"
-                />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -132,7 +115,6 @@ export function ServicesPricingSection({ bookingUrl, serviceGroups }: ServicesPr
 
       {selected ? (
         <ServiceDetailsModal
-          bookingUrl={bookingUrl}
           selected={selected}
           onClose={() => setSelected(null)}
         />
@@ -188,7 +170,6 @@ function ServicePriceList({ service }: { service: Service }) {
     <div className="my-5 rounded-lg border border-border bg-background p-4">
       {service.priceLines.map((price, index) => {
         const item = priceLabel(price);
-
         return (
           <div
             key={index}
@@ -206,11 +187,9 @@ function ServicePriceList({ service }: { service: Service }) {
 }
 
 function ServiceDetailsModal({
-  bookingUrl,
   selected,
   onClose,
 }: {
-  bookingUrl: string | null;
   selected: SelectedService;
   onClose: () => void;
 }) {
@@ -251,10 +230,6 @@ function ServiceDetailsModal({
             <div className="mt-6 space-y-3">
               <DetailRow label="What to expect" value={details.prep} />
               <DetailRow label="Provider note" value={details.note} />
-              <DetailRow
-                label="How to Book"
-                value="Submit a request through our contact form and a team member will follow up within 24 hours to confirm your appointment. Existing patients with a FollowMyHealth account can self-schedule from the portal."
-              />
             </div>
           </div>
 
@@ -263,12 +238,6 @@ function ServiceDetailsModal({
               Pricing
             </p>
             <ServicePriceList service={selected.service} />
-            <BookingCTA
-              bookingUrl={bookingUrl}
-              source={`service_modal_${selected.service.name.toLowerCase().replaceAll(" ", "_")}`}
-              variant="stacked"
-              className="mt-2"
-            />
           </div>
         </div>
 

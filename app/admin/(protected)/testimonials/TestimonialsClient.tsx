@@ -28,7 +28,12 @@ export function TestimonialsClient({
   onToggleVisibility,
 }: Props) {
   const router = useRouter();
+  const [prevInitial, setPrevInitial] = useState(initialTestimonials);
   const [items, setItems] = useState(initialTestimonials);
+  if (prevInitial !== initialTestimonials) {
+    setPrevInitial(initialTestimonials);
+    setItems(initialTestimonials);
+  }
   const [panel, setPanel] = useState<PanelState>({ mode: "closed" });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -3,12 +3,59 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/admin-auth";
-import type { ServicePriceLine } from "@/lib/types/db";
+import type { DbService, ServiceCategory, ServicePriceLine } from "@/lib/types/db";
 
 function revalidateServicePages() {
   revalidatePath("/admin/services");
   revalidatePath("/services");
   revalidatePath("/");
+}
+
+export async function createService(data: {
+  name: string;
+  summary: string;
+  category: string;
+  duration: string;
+  hero_image_url: string;
+}): Promise<DbService> {
+  await requireAdmin();
+  const supabase = createServiceClient();
+
+  const { data: maxRow } = await supabase
+    .from("services")
+    .select("display_order")
+    .eq("category", data.category)
+    .order("display_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const nextOrder = maxRow ? maxRow.display_order + 1 : 0;
+
+  const { data: inserted, error } = await supabase
+    .from("services")
+    .insert({
+      name: data.name,
+      summary: data.summary,
+      category: data.category,
+      duration: data.duration || null,
+      hero_image_url: data.hero_image_url || null,
+      display_order: nextOrder,
+      is_visible: true,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  revalidateServicePages();
+  return inserted as DbService;
+}
+
+export async function deleteService(id: string) {
+  await requireAdmin();
+  const supabase = createServiceClient();
+  const { error } = await supabase.from("services").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidateServicePages();
 }
 
 export async function updateService(
@@ -86,4 +133,59 @@ export async function deleteServicePriceLine(id: string) {
   const { error } = await supabase.from("service_price_lines").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidateServicePages();
+}
+
+// ── Category management ──────────────────────────────────────────────────────
+
+export async function getServiceCategories(): Promise<ServiceCategory[]> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("service_categories")
+    .select("*")
+    .order("display_order");
+  if (error) throw new Error(error.message);
+  return (data ?? []) as ServiceCategory[];
+}
+
+export async function updateServiceCategoryImage(id: string, imageUrl: string | null) {
+  await requireAdmin();
+  const supabase = createServiceClient();
+  const { error } = await supabase
+    .from("service_categories")
+    .update({ image_url: imageUrl })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidateServicePages();
+}
+
+export async function createServiceCategory(name: string): Promise<ServiceCategory> {
+  await requireAdmin();
+  const supabase = createServiceClient();
+
+  const { data: maxRow } = await supabase
+    .from("service_categories")
+    .select("display_order")
+    .order("display_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const nextOrder = maxRow ? maxRow.display_order + 1 : 0;
+
+  const { data: inserted, error } = await supabase
+    .from("service_categories")
+    .insert({ name: name.trim(), display_order: nextOrder })
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/services");
+  return inserted as ServiceCategory;
+}
+
+export async function deleteServiceCategory(id: string) {
+  await requireAdmin();
+  const supabase = createServiceClient();
+  const { error } = await supabase.from("service_categories").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/services");
 }

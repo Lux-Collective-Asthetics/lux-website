@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  BookImage,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +51,7 @@ const NAV: NavSection[] = [
     title: "Content",
     items: [
       { label: "Gallery", href: "/admin/gallery", icon: Images },
+      { label: "About Gallery", href: "/admin/about-gallery", icon: BookImage },
       { label: "Testimonials", href: "/admin/testimonials", icon: MessageSquare },
       { label: "Services", href: "/admin/services", icon: Scissors },
       { label: "Staff", href: "/admin/staff", icon: Users },

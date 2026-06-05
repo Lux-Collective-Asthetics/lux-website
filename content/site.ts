@@ -208,6 +208,6 @@ export const testimonials: Testimonial[] = [
 
 export const brandPrinciples = [
   "Consultation-led care — every service starts with a provider conversation, not a package upsell.",
-  "Real results, real imagery — we use actual client photos; no stock photography or AI-generated visuals.",
+  "Real results, real imagery — we use actual client photos, not stock photography.",
   "Your privacy matters — we never collect medical history or health information through this website.",
 ];

@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { ShieldCheck, Sparkles } from "lucide-react";
 
-import { BookingCTA } from "@/components/booking-cta";
 import { PublicStaffSection } from "@/components/public-staff-section";
+import { AboutGallery } from "@/components/AboutGallery";
 import { business, brandPrinciples, staff as defaultStaff } from "@/content/site";
-import { media } from "@/content/media";
-import { getBookingUrl } from "@/lib/booking";
 import { createClient } from "@/lib/supabase/server";
-import type { StaffMember } from "@/lib/types/db";
+import type { AboutGalleryPhoto, StaffMember } from "@/lib/types/db";
 
 export const dynamic = "force-dynamic";
 
@@ -23,30 +20,29 @@ export const metadata: Metadata = {
   },
 };
 
-
 export default async function AboutPage() {
-  const bookingUrl = getBookingUrl();
+  const supabase = await createClient();
 
-  let staff = [] as StaffMember[];
-  let shouldUseFallback = false;
+  let staff: StaffMember[] = [];
+  let galleryPhotos: AboutGalleryPhoto[] = [];
+
   try {
-    const supabase = await createClient();
-    const { data: staffData, error } = await supabase
-      .from("staff_members")
-      .select("*")
-      .eq("is_visible", true)
-      .order("display_order");
+    const [staffRes, galleryRes] = await Promise.all([
+      supabase.from("staff_members").select("*").eq("is_visible", true).order("display_order"),
+      supabase.from("about_gallery").select("*").eq("is_visible", true).order("display_order"),
+    ]);
 
-    if (!error) {
-      staff = (staffData ?? []) as StaffMember[];
-    } else {
-      shouldUseFallback = true;
+    if (!staffRes.error) {
+      staff = (staffRes.data ?? []) as StaffMember[];
+    }
+    if (!galleryRes.error) {
+      galleryPhotos = (galleryRes.data ?? []) as AboutGalleryPhoto[];
     }
   } catch {
-    shouldUseFallback = true;
+    // fall through to static fallback below
   }
 
-  if (shouldUseFallback && staff.length === 0) {
+  if (staff.length === 0) {
     staff = defaultStaff.map((member, index) => ({
       id: `static-${index}`,
       name: member.name,
@@ -57,6 +53,7 @@ export default async function AboutPage() {
       booking_url: null,
       display_order: index,
       is_visible: true,
+      is_owner: member.isOwner ?? false,
       created_at: new Date().toISOString(),
     }));
   }
@@ -64,51 +61,29 @@ export default async function AboutPage() {
   return (
     <div>
       <section className="border-b border-border bg-card">
-        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:px-8">
-          <div>
-            <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-accent-foreground">
-              <Sparkles className="size-4 text-accent" />
-              Welcome to The Lux
-            </p>
-            <h1 className="mt-4 text-5xl text-primary sm:text-6xl">
-              Advanced aesthetics with a provider-first, human approach.
-            </h1>
-            <p className="mt-5 text-lg text-muted-foreground">
-              {business.shortName} is built for clients who want science-backed treatments, clear guidance, and an experience that feels calm from the first conversation.
-            </p>
-            <div className="mt-8">
-              <BookingCTA bookingUrl={bookingUrl} source="about" />
-              <a
-                href="/services"
-                className="mt-4 inline-flex h-9 items-center justify-center rounded-full border border-border px-5 text-sm font-medium transition-colors hover:bg-muted"
-              >
-                View services
-              </a>
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-[0.85fr_1.15fr] sm:items-end">
-            <div className="relative aspect-4/5 overflow-hidden rounded-lg border border-border bg-background">
-              <Image
-                src={media.lounge.src}
-                alt={media.lounge.alt}
-                fill
-                sizes="(min-width: 1024px) 30vw, 100vw"
-                className="object-cover"
-              />
-            </div>
-            <div className="relative aspect-4/3 overflow-hidden rounded-lg border border-border bg-background">
-              <Image
-                src={media.skinTreatment.src}
-                alt={media.skinTreatment.alt}
-                fill
-                sizes="(min-width: 1024px) 38vw, 100vw"
-                className="object-cover"
-              />
-            </div>
+        <div className="mx-auto max-w-3xl px-5 py-14 sm:px-6 lg:px-8">
+          <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-accent-foreground">
+            <Sparkles className="size-4 text-accent" />
+            Welcome to The Lux
+          </p>
+          <h1 className="mt-4 text-5xl text-primary sm:text-6xl">
+            Advanced aesthetics with a provider-first, human approach.
+          </h1>
+          <p className="mt-5 text-lg text-muted-foreground">
+            {business.shortName} is built for clients who want science-backed treatments, clear guidance, and an experience that feels calm from the first conversation.
+          </p>
+          <div className="mt-8">
+            <a
+              href="/services"
+              className="inline-flex h-9 items-center justify-center rounded-full border border-border px-5 text-sm font-medium transition-colors hover:bg-muted"
+            >
+              View services
+            </a>
           </div>
         </div>
       </section>
+
+      <AboutGallery initialPhotos={galleryPhotos} />
 
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">

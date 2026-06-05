@@ -125,7 +125,7 @@ export function BookingCTA({
           New Patient
         </p>
         <p className="mt-1.5 grow text-sm text-muted-foreground">
-          First time with us? Fill out a quick form and we'll reach out to confirm your visit.
+          First time with us? Fill out a quick form and we&apos;ll reach out to confirm your visit.
         </p>
         <Link
           href="/contact"

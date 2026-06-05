@@ -4,9 +4,8 @@ import { HomepageTestimonials } from "@/components/homepage-testimonials";
 import { LuxHero } from "@/components/lux-hero";
 import { RevealSection } from "@/components/shared/reveal-section";
 import { LuxFeaturesScroll } from "@/components/ui/text-parallax-scroll";
-import { business } from "@/content/site";
+import { business, testimonials as staticTestimonials } from "@/content/site";
 import type { Testimonial } from "@/content/site";
-import { getBookingUrl } from "@/lib/booking";
 import { siteUrl } from "@/lib/site-url";
 import { createClient } from "@/lib/supabase/server";
 
@@ -61,8 +60,8 @@ const localBusinessSchema = {
 };
 
 export default async function Home() {
-  const bookingUrl = getBookingUrl();
   let homepageTestimonials: Testimonial[] = [];
+  let shouldUseFallback = false;
 
   try {
     const supabase = await createClient();
@@ -72,14 +71,20 @@ export default async function Home() {
       .eq("is_visible", true)
       .order("display_order");
 
-    if (!error && dbTestimonials) {
+    if (error) {
+      shouldUseFallback = true;
+    } else if (dbTestimonials) {
       homepageTestimonials = dbTestimonials.map((testimonial: { quote: string; author: string }) => ({
         quote: testimonial.quote,
         author: testimonial.author,
       }));
     }
   } catch {
-    homepageTestimonials = [];
+    shouldUseFallback = true;
+  }
+
+  if (shouldUseFallback && homepageTestimonials.length === 0) {
+    homepageTestimonials = staticTestimonials;
   }
 
   return (
@@ -90,7 +95,7 @@ export default async function Home() {
       />
 
       {/* Hero */}
-      <LuxHero bookingUrl={bookingUrl} />
+      <LuxHero />
 
       {/* Signature services */}
       <LuxFeaturesScroll />
