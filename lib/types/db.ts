@@ -53,6 +53,7 @@ export type StaffMemberWithServices = StaffMember & {
 export type ServiceCategory = {
   id: string;
   name: string;
+  image_url: string | null;
   display_order: number;
   created_at: string;
 };

@@ -6,6 +6,7 @@ import { ServiceSlideshow } from "@/components/service-slideshow";
 import { createClient } from "@/lib/supabase/server";
 import { serviceGroups as defaultServiceGroups } from "@/content/site";
 import type { ServiceGroup, Service } from "@/content/site";
+import type { ServiceCategory } from "@/lib/types/db";
 
 export const dynamic = "force-dynamic";
 
@@ -32,15 +33,26 @@ export const metadata: Metadata = {
 
 export default async function ServicesPage() {
   let serviceGroups: ServiceGroup[] = [];
+  let serviceCategories: ServiceCategory[] = [];
   let shouldUseFallback = false;
 
   try {
     const supabase = await createClient();
-    const { data: dbServices, error } = await supabase
-      .from("services")
-      .select("*, service_price_lines(*)")
-      .eq("is_visible", true)
-      .order("display_order");
+    const [{ data: dbServices, error }, categoriesRes] = await Promise.all([
+      supabase
+        .from("services")
+        .select("*, service_price_lines(*)")
+        .eq("is_visible", true)
+        .order("display_order"),
+      supabase
+        .from("service_categories")
+        .select("*")
+        .order("display_order"),
+    ]);
+
+    if (!categoriesRes.error) {
+      serviceCategories = (categoriesRes.data ?? []) as ServiceCategory[];
+    }
 
     if (error) {
       shouldUseFallback = true;
@@ -94,7 +106,7 @@ export default async function ServicesPage() {
 
       {/* Service category slideshow */}
       <div className="mx-auto max-w-7xl">
-        <ServiceSlideshow />
+        <ServiceSlideshow initialCategories={serviceCategories} />
       </div>
 
       {/* Service groups */}

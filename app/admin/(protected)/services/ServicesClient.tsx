@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff, Pencil, Check, X, Plus, Trash2, ChevronDown, ChevronUp, Tag } from "lucide-react";
+import { Eye, EyeOff, Pencil, Check, X, Plus, Trash2, ChevronDown, ChevronUp, Tag, ImageIcon } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { cn } from "@/lib/utils";
 import type { DbService, DbServiceWithPrices, ServiceCategory, ServicePriceLine } from "@/lib/types/db";
@@ -26,6 +26,7 @@ type Props = {
   onDeletePriceLine: (id: string) => Promise<void>;
   onCreateCategory: (name: string) => Promise<ServiceCategory>;
   onDeleteCategory: (id: string) => Promise<void>;
+  onUpdateCategoryImage: (id: string, imageUrl: string | null) => Promise<void>;
 };
 
 type EditingService = {
@@ -52,6 +53,7 @@ export function ServicesClient({
   onDeletePriceLine,
   onCreateCategory,
   onDeleteCategory,
+  onUpdateCategoryImage,
 }: Props) {
   const [localServices, setLocalServices] = useState(services);
   const [localCategories, setLocalCategories] = useState(categories);
@@ -66,6 +68,7 @@ export function ServicesClient({
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [categorySaving, setCategorySaving] = useState(false);
+  const [editingCategoryImageId, setEditingCategoryImageId] = useState<string | null>(null);
 
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
@@ -210,6 +213,14 @@ export function ServicesClient({
     }
   }
 
+  async function handleUpdateCategoryImage(id: string, url: string) {
+    await onUpdateCategoryImage(id, url);
+    setLocalCategories((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, image_url: url } : c))
+    );
+    setEditingCategoryImageId(null);
+  }
+
   return (
     <div>
       {/* Header */}
@@ -253,23 +264,53 @@ export function ServicesClient({
               </code>
             </p>
           )}
-          <div className="mb-3 flex flex-wrap gap-2">
+          <div className="mb-3 space-y-2">
             {localCategories.map((cat) => (
-              <span
-                key={cat.id}
-                className="flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-3 py-1 text-xs font-medium"
-              >
-                {cat.name}
-                <button
-                  type="button"
-                  onClick={() => handleDeleteCategory(cat.id)}
-                  disabled={categorySaving}
-                  className="text-muted-foreground hover:text-destructive disabled:opacity-50"
-                  title={`Delete category "${cat.name}"`}
-                >
-                  <X className="size-3" />
-                </button>
-              </span>
+              <div key={cat.id}>
+                <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-2">
+                  {/* Thumbnail */}
+                  <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded bg-muted">
+                    {cat.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={cat.image_url} alt={cat.name} className="size-full object-cover" />
+                    ) : (
+                      <ImageIcon className="size-4 text-muted-foreground" />
+                    )}
+                  </div>
+                  <span className="flex-1 text-sm font-medium">{cat.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditingCategoryImageId((prev) => prev === cat.id ? null : cat.id)}
+                    className={cn(
+                      "rounded p-1.5 text-muted-foreground hover:bg-muted",
+                      editingCategoryImageId === cat.id && "bg-muted text-foreground"
+                    )}
+                    title="Edit category image"
+                  >
+                    <ImageIcon className="size-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteCategory(cat.id)}
+                    disabled={categorySaving}
+                    className="rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                    title={`Delete category "${cat.name}"`}
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </div>
+                {editingCategoryImageId === cat.id && (
+                  <div className="mt-1 rounded-lg border border-border bg-muted/30 p-3">
+                    <p className="mb-2 text-xs font-medium text-muted-foreground">Category image (shown in slideshow and homepage)</p>
+                    <ImageUpload
+                      bucket="lux-services"
+                      onUpload={(url) => handleUpdateCategoryImage(cat.id, url)}
+                      currentUrl={cat.image_url || undefined}
+                      label={`${cat.name} category image`}
+                    />
+                  </div>
+                )}
+              </div>
             ))}
           </div>
           <div className="flex gap-2">

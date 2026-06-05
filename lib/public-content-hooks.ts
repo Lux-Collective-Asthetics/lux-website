@@ -3,8 +3,9 @@
 import { useQuery } from "@tanstack/react-query";
 
 import type { ServiceGroup, Testimonial } from "@/content/site";
-import type { AboutGalleryPhoto, GalleryImage, StaffMember } from "@/lib/types/db";
+import type { AboutGalleryPhoto, GalleryImage, ServiceCategory, StaffMember } from "@/lib/types/db";
 import {
+  fetchServiceCategories,
   fetchVisibleAboutGallery,
   fetchVisibleGalleryImages,
   fetchVisibleServiceGroups,
@@ -63,6 +64,16 @@ export function useAboutGallery(initialPhotos: AboutGalleryPhoto[]) {
     queryKey: publicContentQueryKeys.aboutGallery,
     queryFn: fetchVisibleAboutGallery,
     initialData: initialPhotos,
+    initialDataUpdatedAt: STALE_AT_ZERO,
+    refetchInterval: false,
+  });
+}
+
+export function usePublicServiceCategories(initialCategories: ServiceCategory[]) {
+  return useQuery({
+    queryKey: publicContentQueryKeys.serviceCategories,
+    queryFn: fetchServiceCategories,
+    initialData: initialCategories,
     initialDataUpdatedAt: STALE_AT_ZERO,
     refetchInterval: false,
   });

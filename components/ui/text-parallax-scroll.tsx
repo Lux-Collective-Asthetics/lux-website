@@ -7,9 +7,37 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
+import { usePublicServiceCategories } from "@/lib/public-content-hooks";
+import type { ServiceCategory } from "@/lib/types/db";
+
 const IMG_PADDING = 12;
 
-export function LuxFeaturesScroll() {
+// Keyword → fallback image for each of the 3 hardcoded parallax sections
+const SECTION_KEYWORDS: { keywords: string[]; fallback: string }[] = [
+  { keywords: ["injectable"],              fallback: "/injectable-treatment.jpg" },
+  { keywords: ["laser", "skin"],           fallback: "/laser-treatment.jpg" },
+  { keywords: ["wellness", "weight", "hormone"], fallback: "/lounge.jpg" },
+];
+
+function resolveSection(categories: ServiceCategory[], index: number): string {
+  const { keywords, fallback } = SECTION_KEYWORDS[index];
+  const match = categories.find((c) =>
+    keywords.some((k) => c.name.toLowerCase().includes(k))
+  );
+  return match?.image_url ?? fallback;
+}
+
+type Props = {
+  initialCategories: ServiceCategory[];
+};
+
+export function LuxFeaturesScroll({ initialCategories }: Props) {
+  const { data: categories } = usePublicServiceCategories(initialCategories);
+
+  const injectablesImg  = resolveSection(categories, 0);
+  const laserImg        = resolveSection(categories, 1);
+  const wellnessImg     = resolveSection(categories, 2);
+
   return (
     <section className="bg-cream py-10 sm:py-14" aria-labelledby="signature-care-heading">
       <div className="mx-auto max-w-7xl px-5 pb-8 sm:px-6 lg:px-8">
@@ -25,7 +53,7 @@ export function LuxFeaturesScroll() {
       </div>
 
       <TextParallaxContent
-        imgSrc="/injectable-treatment.jpg"
+        imgSrc={injectablesImg}
         imgAlt="Injectable treatment at The Lux Collective"
         subheading="Injectables"
         heading="Results that look like you."
@@ -34,7 +62,7 @@ export function LuxFeaturesScroll() {
       </TextParallaxContent>
 
       <TextParallaxContent
-        imgSrc="/laser-treatment.jpg"
+        imgSrc={laserImg}
         imgAlt="Laser skin treatment at The Lux Collective"
         subheading="Laser & Skin"
         heading="Technology-led renewal."
@@ -43,7 +71,7 @@ export function LuxFeaturesScroll() {
       </TextParallaxContent>
 
       <TextParallaxContent
-        imgSrc="/lounge.jpg"
+        imgSrc={wellnessImg}
         imgAlt="The Lux Collective med spa lounge"
         subheading="Medical Wellness"
         heading="Invest in how you feel."
@@ -68,7 +96,7 @@ function TextParallaxContent({
   children: ReactNode;
 }) {
   return (
-    <div style={{ paddingLeft: IMG_PADDING, paddingRight: IMG_PADDING }}>
+    <div className="px-3">
       <div className="relative h-[140vh]">
         <StickyImage imgSrc={imgSrc} imgAlt={imgAlt} />
         <OverlayCopy subheading={subheading} heading={heading} />

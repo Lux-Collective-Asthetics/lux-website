@@ -9,6 +9,7 @@ import {
   deleteServicePriceLine,
   createServiceCategory,
   deleteServiceCategory,
+  updateServiceCategoryImage,
 } from "./actions";
 import type { DbServiceWithPrices, ServiceCategory } from "@/lib/types/db";
 
@@ -37,6 +38,7 @@ export default async function ServicesAdminPage() {
       onDeletePriceLine={deleteServicePriceLine}
       onCreateCategory={createServiceCategory}
       onDeleteCategory={deleteServiceCategory}
+      onUpdateCategoryImage={updateServiceCategoryImage}
     />
   );
 }
