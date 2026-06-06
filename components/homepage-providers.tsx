@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import type { StaffMember } from "@/lib/types/db";
+import type { StaffMemberWithServices } from "@/lib/types/db";
 import { usePublicStaff } from "@/lib/public-content-hooks";
 
 function staffInitials(name: string) {
@@ -18,7 +18,7 @@ function staffInitials(name: string) {
     .slice(0, 2);
 }
 
-export function HomepageProviders({ initialStaff }: { initialStaff: StaffMember[] }) {
+export function HomepageProviders({ initialStaff }: { initialStaff: StaffMemberWithServices[] }) {
   const { data: staff } = usePublicStaff(initialStaff);
 
   if (staff.length === 0) return null;

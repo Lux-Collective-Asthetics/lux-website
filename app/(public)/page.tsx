@@ -9,7 +9,7 @@ import { business, staff as staticStaff, testimonials as staticTestimonials } fr
 import type { Testimonial } from "@/content/site";
 import { siteUrl } from "@/lib/site-url";
 import { createClient } from "@/lib/supabase/server";
-import type { ServiceCategory, StaffMember } from "@/lib/types/db";
+import type { ServiceCategory, StaffMemberWithServices } from "@/lib/types/db";
 
 export const dynamic = "force-dynamic";
 
@@ -63,7 +63,7 @@ const localBusinessSchema = {
 
 export default async function Home() {
   let homepageTestimonials: Testimonial[] = [];
-  let homepageStaff: StaffMember[] = [];
+  let homepageStaff: StaffMemberWithServices[] = [];
   let serviceCategories: ServiceCategory[] = [];
   let shouldUseFallback = false;
 
@@ -77,7 +77,7 @@ export default async function Home() {
         .order("display_order"),
       supabase
         .from("staff_members")
-        .select("*")
+        .select("*, staff_services(service_id, services(id, name))")
         .eq("is_visible", true)
         .order("display_order"),
       supabase
@@ -96,7 +96,7 @@ export default async function Home() {
     }
 
     if (!staffRes.error) {
-      homepageStaff = (staffRes.data ?? []) as StaffMember[];
+      homepageStaff = (staffRes.data ?? []) as StaffMemberWithServices[];
     }
 
     if (!categoriesRes.error) {
@@ -123,6 +123,7 @@ export default async function Home() {
       is_visible: true,
       is_owner: member.isOwner ?? false,
       created_at: new Date().toISOString(),
+      staff_services: [],
     }));
   }
 
