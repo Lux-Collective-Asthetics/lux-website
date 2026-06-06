@@ -37,7 +37,7 @@ export function PublicStaffSection({ initialStaff }: { initialStaff: StaffMember
           </h2>
 
           <div className="mt-8 flex flex-col gap-4">
-            {staff.map((member) => (
+            {staff.map((member, i) => (
               <article
                 key={member.id}
                 className="flex gap-5 rounded-lg border border-primary-foreground/15 bg-primary-foreground/8 p-5"
@@ -50,6 +50,7 @@ export function PublicStaffSection({ initialStaff }: { initialStaff: StaffMember
                       fill
                       sizes="64px"
                       className="object-cover"
+                      priority={i === 0}
                     />
                   ) : (
                     staffInitials(member.name)

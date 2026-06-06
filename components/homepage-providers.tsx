@@ -45,7 +45,7 @@ export function HomepageProviders({ initialStaff }: { initialStaff: StaffMember[
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {staff.map((member) => (
+          {staff.map((member, i) => (
             <div
               key={member.id}
               className="flex flex-col items-center rounded-lg border border-border bg-background p-5 text-center"
@@ -58,6 +58,7 @@ export function HomepageProviders({ initialStaff }: { initialStaff: StaffMember[
                     fill
                     sizes="80px"
                     className="object-cover"
+                    priority={i === 0}
                   />
                 ) : (
                   staffInitials(member.name)

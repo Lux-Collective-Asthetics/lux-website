@@ -95,7 +95,7 @@ export function TurnstileWidget({ siteKey }: { siteKey: string }) {
     <div className="rounded-lg border border-border bg-background p-3">
       <Script
         src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-        strategy="lazyOnload"
+        strategy="afterInteractive"
       />
       <div ref={ref} className="min-h-16.25" />
       {loadState === "loading" && (
