@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import type { ServiceGroup, Testimonial } from "@/content/site";
-import type { AboutGalleryPhoto, GalleryImage, ServiceCategory, StaffMember, StaffMemberWithServices } from "@/lib/types/db";
+import type { AboutGalleryPhoto, GalleryImage, ServiceCategory, StaffMemberWithServices } from "@/lib/types/db";
 import {
   fetchServiceCategories,
   fetchVisibleAboutGallery,

@@ -38,18 +38,16 @@ export function PublicStaffSection({ initialStaff }: { initialStaff: StaffMember
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {staff.map((member, i) => {
               const isOwner = member.is_owner;
-              const serviceNames = member.staff_services
-                .map((ss) => ss.services?.name)
-                .filter(Boolean) as string[];
-              const visibleServices = serviceNames.slice(0, 3);
-              const extraCount = serviceNames.length - visibleServices.length;
+              const namedServices = member.staff_services.filter((ss) => ss.services?.name);
+              const visibleServices = namedServices.slice(0, 3);
+              const extraCount = namedServices.length - visibleServices.length;
 
               return (
                 <article
                   key={member.id}
                   className={[
                     "group relative overflow-hidden rounded-xl border border-primary-foreground/10 transition-colors hover:border-champagne/40",
-                    isOwner ? "col-span-2" : "",
+                    isOwner ? "sm:col-span-2" : "",
                   ]
                     .filter(Boolean)
                     .join(" ")}
@@ -106,12 +104,12 @@ export function PublicStaffSection({ initialStaff }: { initialStaff: StaffMember
 
                       {visibleServices.length > 0 && (
                         <div className="mt-2.5 flex flex-wrap gap-1.5">
-                          {visibleServices.map((name) => (
+                          {visibleServices.map((ss) => (
                             <span
-                              key={name}
+                              key={ss.service_id}
                               className="rounded-full border border-champagne/25 bg-champagne/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.07em] text-champagne"
                             >
-                              {name}
+                              {ss.services!.name}
                             </span>
                           ))}
                           {extraCount > 0 && (

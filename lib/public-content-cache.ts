@@ -1,5 +1,5 @@
 import type { Service, ServiceGroup, Testimonial } from "@/content/site";
-import type { AboutGalleryPhoto, GalleryImage, ServiceCategory, StaffMember, StaffMemberWithServices } from "@/lib/types/db";
+import type { AboutGalleryPhoto, GalleryImage, ServiceCategory, StaffMemberWithServices } from "@/lib/types/db";
 import { createClient } from "@/lib/supabase/client";
 
 type DbServicePriceLine = {

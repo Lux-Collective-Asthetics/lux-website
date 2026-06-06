@@ -78,9 +78,7 @@ export function StaffModal({ member, onClose }: Props) {
     };
   }, []);
 
-  const serviceNames = member.staff_services
-    .map((ss) => ss.services?.name)
-    .filter(Boolean) as string[];
+  const namedServices = member.staff_services.filter((ss) => ss.services?.name);
 
   const currentPhoto = photos[index];
   const hasMultiple = photos.length > 1;
@@ -102,6 +100,7 @@ export function StaffModal({ member, onClose }: Props) {
           type="button"
           onClick={onClose}
           aria-label="Close"
+          autoFocus
           className="absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70"
         >
           <X className="size-4" />
@@ -186,18 +185,18 @@ export function StaffModal({ member, onClose }: Props) {
 
             <p className="mt-4 text-sm text-muted-foreground">{member.bio}</p>
 
-            {serviceNames.length > 0 && (
+            {namedServices.length > 0 && (
               <div className="mt-4">
                 <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
                   Services offered
                 </p>
                 <div className="flex flex-wrap gap-1.5">
-                  {serviceNames.map((name) => (
+                  {namedServices.map((ss) => (
                     <span
-                      key={name}
+                      key={ss.service_id}
                       className="rounded-full border border-border bg-muted px-2.5 py-1 text-[10px] font-semibold text-muted-foreground"
                     >
-                      {name}
+                      {ss.services!.name}
                     </span>
                   ))}
                 </div>
