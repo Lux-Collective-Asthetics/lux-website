@@ -5,7 +5,7 @@ import { PublicStaffSection } from "@/components/public-staff-section";
 import { AboutGallery } from "@/components/AboutGallery";
 import { business, brandPrinciples, staff as defaultStaff } from "@/content/site";
 import { createClient } from "@/lib/supabase/server";
-import type { AboutGalleryPhoto, StaffMember } from "@/lib/types/db";
+import type { AboutGalleryPhoto, StaffMemberWithServices } from "@/lib/types/db";
 
 export const dynamic = "force-dynamic";
 
@@ -23,17 +23,21 @@ export const metadata: Metadata = {
 export default async function AboutPage() {
   const supabase = await createClient();
 
-  let staff: StaffMember[] = [];
+  let staff: StaffMemberWithServices[] = [];
   let galleryPhotos: AboutGalleryPhoto[] = [];
 
   try {
     const [staffRes, galleryRes] = await Promise.all([
-      supabase.from("staff_members").select("*").eq("is_visible", true).order("display_order"),
+      supabase
+        .from("staff_members")
+        .select("*, staff_services(service_id, services(id, name))")
+        .eq("is_visible", true)
+        .order("display_order"),
       supabase.from("about_gallery").select("*").eq("is_visible", true).order("display_order"),
     ]);
 
     if (!staffRes.error) {
-      staff = (staffRes.data ?? []) as StaffMember[];
+      staff = (staffRes.data ?? []) as StaffMemberWithServices[];
     }
     if (!galleryRes.error) {
       galleryPhotos = (galleryRes.data ?? []) as AboutGalleryPhoto[];
@@ -55,6 +59,7 @@ export default async function AboutPage() {
       is_visible: true,
       is_owner: member.isOwner ?? false,
       created_at: new Date().toISOString(),
+      staff_services: [],
     }));
   }
 
