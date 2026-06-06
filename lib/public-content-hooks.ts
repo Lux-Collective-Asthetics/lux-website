@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import type { ServiceGroup, Testimonial } from "@/content/site";
-import type { AboutGalleryPhoto, GalleryImage, ServiceCategory, StaffMember } from "@/lib/types/db";
+import type { AboutGalleryPhoto, GalleryImage, ServiceCategory, StaffMember, StaffMemberWithServices } from "@/lib/types/db";
 import {
   fetchServiceCategories,
   fetchVisibleAboutGallery,
@@ -39,7 +39,7 @@ export function usePublicServiceGroups(initialServiceGroups: ServiceGroup[]) {
   });
 }
 
-export function usePublicStaff(initialStaff: StaffMember[]) {
+export function usePublicStaff(initialStaff: StaffMemberWithServices[]) {
   return useQuery({
     queryKey: publicContentQueryKeys.staff,
     queryFn: fetchVisibleStaff,
