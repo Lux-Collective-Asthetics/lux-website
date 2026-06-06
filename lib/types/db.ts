@@ -55,6 +55,7 @@ export type ServiceCategory = {
   name: string;
   image_url: string | null;
   display_order: number;
+  is_system: boolean;
   created_at: string;
 };
 
@@ -63,6 +64,7 @@ export type DbService = {
   name: string;
   summary: string;
   category: string;
+  category_id: string | null;
   duration: string | null;
   hero_image_url: string | null;
   display_order: number;

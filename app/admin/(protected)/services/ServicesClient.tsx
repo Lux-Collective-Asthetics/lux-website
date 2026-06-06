@@ -10,7 +10,7 @@ type Props = {
   services: DbServiceWithPrices[];
   categories: ServiceCategory[];
   onCreate: (data: {
-    name: string; summary: string; category: string;
+    name: string; summary: string; category: string; category_id: string;
     duration: string; hero_image_url: string;
   }) => Promise<DbService>;
   onDelete: (id: string) => Promise<void>;
@@ -34,12 +34,12 @@ type EditingService = {
 };
 
 type NewServiceForm = {
-  name: string; summary: string; category: string;
+  name: string; summary: string; category: string; category_id: string;
   duration: string; hero_image_url: string;
 };
 
 const emptyNewService: NewServiceForm = {
-  name: "", summary: "", category: "", duration: "", hero_image_url: "",
+  name: "", summary: "", category: "", category_id: "", duration: "", hero_image_url: "",
 };
 
 export function ServicesClient({
@@ -173,7 +173,7 @@ export function ServicesClient({
 
   async function handleCreate(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!newForm.name.trim() || !newForm.category) return;
+    if (!newForm.name.trim() || !newForm.category_id) return;
     setNewFormSaving(true);
     try {
       const created = await onCreate(newForm);
@@ -360,13 +360,16 @@ export function ServicesClient({
               <select
                 id="new-category"
                 required
-                value={newForm.category}
-                onChange={(e) => setNewForm((p) => ({ ...p, category: e.target.value }))}
+                value={newForm.category_id}
+                onChange={(e) => {
+                  const cat = localCategories.find((c) => c.id === e.target.value);
+                  setNewForm((p) => ({ ...p, category_id: e.target.value, category: cat?.name ?? "" }));
+                }}
                 className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#c9a96e]"
               >
                 <option value="">Select a category…</option>
                 {localCategories.map((cat) => (
-                  <option key={cat.id} value={cat.name}>{cat.name}</option>
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
             </div>
@@ -414,7 +417,7 @@ export function ServicesClient({
             </button>
             <button
               type="submit"
-              disabled={newFormSaving || !newForm.name.trim() || !newForm.category}
+              disabled={newFormSaving || !newForm.name.trim() || !newForm.category_id}
               className="rounded bg-[#c9a96e] px-4 py-1.5 text-sm font-medium text-white hover:bg-[#b8954f] disabled:opacity-50"
             >
               {newFormSaving ? "Creating…" : "Create service"}

@@ -15,6 +15,7 @@ export async function createService(data: {
   name: string;
   summary: string;
   category: string;
+  category_id: string;
   duration: string;
   hero_image_url: string;
 }): Promise<DbService> {
@@ -24,7 +25,7 @@ export async function createService(data: {
   const { data: maxRow } = await supabase
     .from("services")
     .select("display_order")
-    .eq("category", data.category)
+    .eq("category_id", data.category_id)
     .order("display_order", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -37,6 +38,7 @@ export async function createService(data: {
       name: data.name,
       summary: data.summary,
       category: data.category,
+      category_id: data.category_id,
       duration: data.duration || null,
       hero_image_url: data.hero_image_url || null,
       display_order: nextOrder,
@@ -178,14 +180,48 @@ export async function createServiceCategory(name: string): Promise<ServiceCatego
     .single();
 
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/services");
+  revalidateServicePages();
   return inserted as ServiceCategory;
 }
 
-export async function deleteServiceCategory(id: string) {
+export async function deleteServiceCategory(id: string, reassignToId?: string) {
   await requireAdmin();
   const supabase = createServiceClient();
+
+  let targetId = reassignToId;
+  if (!targetId) {
+    const { data: otherCategory } = await supabase
+      .from("service_categories")
+      .select("id")
+      .eq("is_system", true)
+      .maybeSingle();
+    targetId = otherCategory?.id;
+  }
+
+  if (!targetId) {
+    throw new Error(
+      "Cannot delete category: no reassignment target and no system 'Other' category found."
+    );
+  }
+
+  const { error: reassignError } = await supabase
+    .from("services")
+    .update({ category_id: targetId })
+    .eq("category_id", id);
+  if (reassignError) throw new Error(reassignError.message);
+
   const { error } = await supabase.from("service_categories").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/services");
+  revalidateServicePages();
+}
+
+export async function getServiceCountByCategory(categoryId: string): Promise<number> {
+  await requireAdmin();
+  const supabase = createServiceClient();
+  const { count, error } = await supabase
+    .from("services")
+    .select("id", { count: "exact", head: true })
+    .eq("category_id", categoryId);
+  if (error) throw new Error(error.message);
+  return count ?? 0;
 }
