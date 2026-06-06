@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import type { StaffMember, StaffPhoto } from "@/lib/types/db";
+import type { StaffMemberWithServices, StaffPhoto } from "@/lib/types/db";
 
 function staffInitials(name: string) {
   return name
@@ -18,7 +18,7 @@ function staffInitials(name: string) {
 }
 
 type Props = {
-  member: StaffMember;
+  member: StaffMemberWithServices;
   onClose: () => void;
 };
 
@@ -42,20 +42,24 @@ export function StaffModal({ member, onClose }: Props) {
       const extra = ((data ?? []) as Pick<StaffPhoto, "photo_url">[]).map(
         (p) => p.photo_url
       );
-      const all = member.photo_url
-        ? [member.photo_url, ...extra]
-        : extra;
+      const all = member.photo_url ? [member.photo_url, ...extra] : extra;
       setPhotos(all);
       setLoading(false);
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [member.id, member.photo_url]);
 
-  const prev = useCallback(() =>
-    setIndex((i) => (i === 0 ? photos.length - 1 : i - 1)), [photos.length]);
-  const next = useCallback(() =>
-    setIndex((i) => (i === photos.length - 1 ? 0 : i + 1)), [photos.length]);
+  const prev = useCallback(
+    () => setIndex((i) => (i === 0 ? photos.length - 1 : i - 1)),
+    [photos.length]
+  );
+  const next = useCallback(
+    () => setIndex((i) => (i === photos.length - 1 ? 0 : i + 1)),
+    [photos.length]
+  );
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -67,11 +71,16 @@ export function StaffModal({ member, onClose }: Props) {
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose, prev, next]);
 
-  // Lock body scroll while modal is open
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, []);
+
+  const serviceNames = member.staff_services
+    .map((ss) => ss.services?.name)
+    .filter(Boolean) as string[];
 
   const currentPhoto = photos[index];
   const hasMultiple = photos.length > 1;
@@ -82,10 +91,10 @@ export function StaffModal({ member, onClose }: Props) {
       onClick={onClose}
       aria-modal="true"
       role="dialog"
-      aria-label={`Photos of ${member.name}`}
+      aria-label={`Profile of ${member.name}`}
     >
       <div
-        className="relative flex w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-card shadow-2xl"
+        className="relative flex w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-card shadow-2xl sm:flex-row"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close */}
@@ -98,92 +107,113 @@ export function StaffModal({ member, onClose }: Props) {
           <X className="size-4" />
         </button>
 
-        {/* Photo area */}
-        <div className="relative aspect-4/3 w-full bg-black">
-          {loading ? (
-            <div className="flex h-full items-center justify-center">
-              <div className="size-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-            </div>
-          ) : currentPhoto ? (
-            <Image
-              src={currentPhoto}
-              alt={`${member.name} photo ${index + 1}`}
-              fill
-              sizes="(min-width: 768px) 768px, 100vw"
-              className="object-contain"
-              priority
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-3xl font-semibold text-white/40">
-              {staffInitials(member.name)}
-            </div>
-          )}
+        {/* Photo carousel — top on mobile, left on sm+ */}
+        <div className="relative w-full bg-black sm:w-1/2 sm:shrink-0">
+          <div className="relative aspect-square w-full sm:aspect-3/4">
+            {loading ? (
+              <div className="flex h-full items-center justify-center">
+                <div className="size-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+              </div>
+            ) : currentPhoto ? (
+              <Image
+                src={currentPhoto}
+                alt={`${member.name} photo ${index + 1}`}
+                fill
+                sizes="(min-width: 640px) 384px, 100vw"
+                className="object-cover"
+                priority
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center font-heading text-4xl font-semibold text-white/30">
+                {staffInitials(member.name)}
+              </div>
+            )}
 
-          {/* Arrows */}
-          {hasMultiple && (
-            <>
-              <button
-                type="button"
-                onClick={prev}
-                aria-label="Previous photo"
-                className="absolute left-3 top-1/2 -translate-y-1/2 flex size-9 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70"
-              >
-                <ChevronLeft className="size-5" />
-              </button>
-              <button
-                type="button"
-                onClick={next}
-                aria-label="Next photo"
-                className="absolute right-3 top-1/2 -translate-y-1/2 flex size-9 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70"
-              >
-                <ChevronRight className="size-5" />
-              </button>
-            </>
-          )}
-
-          {/* Dot indicators */}
-          {hasMultiple && (
-            <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
-              {photos.map((_, i) => (
+            {hasMultiple && (
+              <>
                 <button
-                  key={i}
                   type="button"
-                  onClick={() => setIndex(i)}
-                  aria-label={`Go to photo ${i + 1}`}
-                  className={`size-2 rounded-full transition-all ${
-                    i === index ? "bg-white scale-125" : "bg-white/40"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+                  onClick={prev}
+                  aria-label="Previous photo"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 flex size-9 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70"
+                >
+                  <ChevronLeft className="size-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={next}
+                  aria-label="Next photo"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 flex size-9 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70"
+                >
+                  <ChevronRight className="size-5" />
+                </button>
+              </>
+            )}
 
-        {/* Staff info */}
-        <div className="flex items-start gap-4 p-5">
-          <div className="flex-1">
-            <h2 className="text-xl font-semibold text-primary">
-              {member.name}, {member.credential}
-            </h2>
-            <p className="mt-0.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {member.title}
-            </p>
-            <p className="mt-3 text-sm text-muted-foreground">{member.bio}</p>
-            {member.booking_url && (
-              <a
-                href={member.booking_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center rounded-full bg-[#c9a96e] px-5 py-2 text-sm font-medium text-white hover:bg-[#b8955a]"
-              >
-                Book with {member.name.split(" ")[0]}
-              </a>
+            {hasMultiple && (
+              <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+                {photos.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setIndex(i)}
+                    aria-label={`Go to photo ${i + 1}`}
+                    className={`size-2 rounded-full transition-all ${
+                      i === index ? "scale-125 bg-white" : "bg-white/40"
+                    }`}
+                  />
+                ))}
+              </div>
             )}
           </div>
-          {hasMultiple && (
-            <p className="shrink-0 text-xs text-muted-foreground">
-              {index + 1} / {photos.length}
+        </div>
+
+        {/* Info panel — bottom on mobile, right on sm+ */}
+        <div className="flex flex-1 flex-col justify-between overflow-y-auto p-6">
+          <div>
+            <h2 className="font-heading text-2xl font-bold text-primary">
+              {member.name}, {member.credential}
+            </h2>
+            <p className="mt-0.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              {member.title}
             </p>
+
+            {member.is_owner && (
+              <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-champagne/35 bg-champagne/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-champagne">
+                <span aria-hidden="true">✦</span> Owner &amp; Founder
+              </div>
+            )}
+
+            <p className="mt-4 text-sm text-muted-foreground">{member.bio}</p>
+
+            {serviceNames.length > 0 && (
+              <div className="mt-4">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                  Services offered
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {serviceNames.map((name) => (
+                    <span
+                      key={name}
+                      className="rounded-full border border-border bg-muted px-2.5 py-1 text-[10px] font-semibold text-muted-foreground"
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {member.booking_url && (
+            <a
+              href={member.booking_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-champagne px-5 py-3 text-sm font-bold text-espresso transition-opacity hover:opacity-90"
+            >
+              Book with {member.name.split(" ")[0]} →
+            </a>
           )}
         </div>
       </div>
