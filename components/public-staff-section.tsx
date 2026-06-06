@@ -35,7 +35,7 @@ export function PublicStaffSection({ initialStaff }: { initialStaff: StaffMember
             The people behind every treatment.
           </h2>
 
-          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {staff.map((member, i) => {
               const isOwner = member.is_owner;
               const serviceNames = member.staff_services
