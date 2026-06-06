@@ -31,7 +31,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function ServicesPage() {
+export default async function ServicesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const { category: initialCategory } = await searchParams;
+
   let serviceGroups: ServiceGroup[] = [];
   let serviceCategories: ServiceCategory[] = [];
   let shouldUseFallback = false;
@@ -106,11 +112,12 @@ export default async function ServicesPage() {
 
       {/* Service category slideshow */}
       <div className="mx-auto max-w-7xl">
-        <ServiceSlideshow initialCategories={serviceCategories} />
+        <ServiceSlideshow initialCategories={serviceCategories} initialServiceGroups={serviceGroups} />
       </div>
 
       {/* Service groups */}
-      <PublicServicesPricing initialServiceGroups={serviceGroups} />
+      <div id="services-grid" />
+      <PublicServicesPricing initialServiceGroups={serviceGroups} initialActiveCategory={initialCategory} />
     </>
   );
 }

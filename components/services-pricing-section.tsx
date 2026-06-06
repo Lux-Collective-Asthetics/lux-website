@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Clock, Info, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -13,17 +14,27 @@ type SelectedService = {
 
 type ServicesPricingSectionProps = {
   serviceGroups: ServiceGroup[];
+  initialActiveCategory?: string;
 };
 
 const categoryCopy: Record<string, string> = {
-  Injectables: "Subtle structure, soft movement, and treatment plans built around your features.",
-  "Laser Treatments": "Light and laser services for tone, hair reduction, visible veins, and clearer skin.",
-  "Regenerative Treatments": "PRP-based options for texture, collagen support, hair restoration, and wellness goals.",
-  Wellness: "Provider-led support for weight loss, hormone therapy, and select in-office procedures.",
+  Injectables:       "Subtle structure, soft movement, and treatment plans built around your features.",
+  PRP:               "Platelet-rich plasma treatments for skin renewal, hair restoration, and regenerative wellness.",
+  HRT:               "Hormone replacement therapy reviewed with a provider — oral, injectable, or pellet options.",
+  "Laser Treatments": "Laser services for hair reduction, photofacial resurfacing, and clearer skin.",
+  Massage:           "Therapeutic and relaxation massage tailored to your comfort and wellness goals.",
+  Facials:           "Medical-grade skin treatments targeting hydration, clarity, aging, and texture.",
+  "Eye Enhancements": "Lash and brow services for defined, polished eyes with lasting results.",
+  Waxing:            "Smooth, precise hair removal and back facial treatments.",
+  Wellness:          "Provider-led support for weight loss and select in-office procedures.",
 };
 
 function slug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function categorySlug(name: string) {
+  return name.toLowerCase().replace(/\s+/g, "-");
 }
 
 function priceLabel(price: string) {
@@ -38,10 +49,20 @@ function detailCopy(service: Service, groupName: string) {
   const introByGroup: Record<string, string> = {
     Injectables:
       "Best for clients who want refreshed, natural-looking results with a conservative, provider-guided plan.",
+    PRP:
+      "Best for clients interested in PRP-supported renewal, collagen stimulation, hair restoration, or regenerative wellness.",
+    HRT:
+      "Best for clients seeking hormone balance support — a provider consultation confirms the right approach for your goals.",
     "Laser Treatments":
-      "Best for clients who want targeted technology-based treatments for skin tone, unwanted hair, or visible veins.",
-    "Regenerative Treatments":
-      "Best for clients interested in PRP-supported renewal, collagen support, and consultation-led regenerative care.",
+      "Best for clients who want targeted laser-based treatments for hair reduction, skin resurfacing, or pigment concerns.",
+    Massage:
+      "Best for clients looking to relieve tension, support recovery, or simply set aside time for rest and renewal.",
+    Facials:
+      "Best for clients who want medical-grade skin care tailored to their skin type, concerns, and lifestyle.",
+    "Eye Enhancements":
+      "Best for clients who want polished, defined eyes without the daily effort — results that last weeks.",
+    Waxing:
+      "Best for clients who want smooth, clean results with minimal downtime.",
     Wellness:
       "Best for clients looking for provider-led support beyond the surface, with recommendations based on goals and clinical fit.",
   };
@@ -57,7 +78,9 @@ function detailCopy(service: Service, groupName: string) {
   };
 }
 
-export function ServicesPricingSection({ serviceGroups }: ServicesPricingSectionProps) {
+export function ServicesPricingSection({ serviceGroups, initialActiveCategory }: ServicesPricingSectionProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [selected, setSelected] = useState<SelectedService | null>(null);
 
   useEffect(() => {
@@ -73,51 +96,77 @@ export function ServicesPricingSection({ serviceGroups }: ServicesPricingSection
     };
   }, [selected]);
 
+  const urlCategory = searchParams.get("category");
+  const defaultSlug = serviceGroups[0] ? categorySlug(serviceGroups[0].name) : "";
+  const activeSlug = urlCategory ?? initialActiveCategory ?? defaultSlug;
+  const activeGroup =
+    serviceGroups.find((g) => categorySlug(g.name) === activeSlug) ?? serviceGroups[0];
+
+  function selectCategory(groupName: string) {
+    router.replace(`/services?category=${categorySlug(groupName)}`, { scroll: false });
+  }
+
   return (
     <>
       <div className="mx-auto max-w-7xl px-5 pb-14 sm:px-6 lg:px-8">
-        <div className="space-y-8">
-          {serviceGroups.map((group) => (
-            <section
-              key={group.name}
-              aria-labelledby={`${slug(group.name)}-heading`}
-              className="grid gap-4 lg:grid-cols-[220px_1fr]"
-            >
-              <div className="rounded-lg border border-border bg-primary p-4 text-primary-foreground shadow-sm lg:sticky lg:top-24 lg:self-start">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-primary-foreground/65">
-                  Category
-                </p>
-                <h2 id={`${slug(group.name)}-heading`} className="mt-2 text-3xl">
-                  {group.name}
-                </h2>
-                <p className="mt-3 text-xs leading-6 text-primary-foreground/75">
-                  {categoryCopy[group.name] ?? "Consultation-led care with clear pricing."}
-                </p>
-                <p className="mt-4 border-t border-primary-foreground/15 pt-4 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground/70">
-                  {group.services.length} services
-                </p>
-              </div>
+        <div className="grid gap-8 lg:grid-cols-[200px_1fr]">
+          <nav className="lg:sticky lg:top-24 lg:self-start">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Categories
+            </p>
+            <div className="flex flex-row flex-wrap gap-2 lg:flex-col lg:gap-1">
+              {serviceGroups.map((group) => {
+                const isActive = categorySlug(group.name) === activeSlug;
+                return (
+                  <button
+                    key={group.name}
+                    type="button"
+                    onClick={() => selectCategory(group.name)}
+                    className={`rounded-md px-3 py-2 text-left text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    {group.name}
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                {group.services.map((service) => (
-                  <ServiceCard
-                    key={service.name}
-                    group={group}
-                    service={service}
-                    onSelect={() => setSelected({ group, service })}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
+          <div>
+            {activeGroup ? (
+              <>
+                <div className="mb-4">
+                  <h2 className="text-3xl text-primary">{activeGroup.name}</h2>
+                  {categoryCopy[activeGroup.name] && (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {categoryCopy[activeGroup.name]}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+                    {activeGroup.services.length} services
+                  </p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {activeGroup.services.map((service) => (
+                    <ServiceCard
+                      key={service.name}
+                      group={activeGroup}
+                      service={service}
+                      onSelect={() => setSelected({ group: activeGroup, service })}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : null}
+          </div>
         </div>
       </div>
 
       {selected ? (
-        <ServiceDetailsModal
-          selected={selected}
-          onClose={() => setSelected(null)}
-        />
+        <ServiceDetailsModal selected={selected} onClose={() => setSelected(null)} />
       ) : null}
     </>
   );

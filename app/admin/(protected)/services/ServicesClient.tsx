@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Eye, EyeOff, Pencil, Check, X, Plus, Trash2, ChevronDown, ChevronUp, Tag, ImageIcon } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { DeleteCategoryModal } from "@/components/admin/DeleteCategoryModal";
 import { cn } from "@/lib/utils";
 import type { DbService, DbServiceWithPrices, ServiceCategory, ServicePriceLine } from "@/lib/types/db";
+import { getServiceCountByCategory } from "./actions";
 
 type Props = {
   services: DbServiceWithPrices[];
@@ -25,7 +27,7 @@ type Props = {
   }) => Promise<ServicePriceLine>;
   onDeletePriceLine: (id: string) => Promise<void>;
   onCreateCategory: (name: string) => Promise<ServiceCategory>;
-  onDeleteCategory: (id: string) => Promise<void>;
+  onDeleteCategory: (id: string, reassignToId?: string) => Promise<void>;
   onUpdateCategoryImage: (id: string, imageUrl: string | null) => Promise<void>;
 };
 
@@ -72,11 +74,11 @@ export function ServicesClient({
 
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  // Show all known category names (from DB categories + any services with unlisted categories)
-  const groupedCategories = [
-    ...localCategories.map((c) => c.name),
-    ...localServices.map((s) => s.category).filter((c) => !localCategories.some((lc) => lc.name === c)),
-  ];
+  const [activeAdminCategoryId, setActiveAdminCategoryId] = useState<string | null>(
+    categories.find((c) => !c.is_system)?.id ?? categories[0]?.id ?? null
+  );
+  const [deleteCategoryTarget, setDeleteCategoryTarget] = useState<ServiceCategory | null>(null);
+  const [deleteCategoryCount, setDeleteCategoryCount] = useState(0);
 
   // ── Edit existing service ────────────────────────────────────────────────
 
@@ -203,14 +205,25 @@ export function ServicesClient({
     }
   }
 
-  async function handleDeleteCategory(id: string) {
+  async function handleDeleteCategory(id: string, reassignToId?: string) {
     setCategorySaving(true);
     try {
-      await onDeleteCategory(id);
+      await onDeleteCategory(id, reassignToId);
       setLocalCategories((prev) => prev.filter((c) => c.id !== id));
+      setDeleteCategoryTarget(null);
+      if (activeAdminCategoryId === id) {
+        const remaining = localCategories.filter((c) => c.id !== id);
+        setActiveAdminCategoryId(remaining.find((c) => !c.is_system)?.id ?? remaining[0]?.id ?? null);
+      }
     } finally {
       setCategorySaving(false);
     }
+  }
+
+  async function handleRequestDeleteCategory(cat: ServiceCategory) {
+    const count = await getServiceCountByCategory(cat.id);
+    setDeleteCategoryCount(count);
+    setDeleteCategoryTarget(cat);
   }
 
   async function handleUpdateCategoryImage(id: string, url: string) {
@@ -243,7 +256,14 @@ export function ServicesClient({
           </button>
           <button
             type="button"
-            onClick={() => { setShowNewForm((v) => !v); setNewForm(emptyNewService); }}
+            onClick={() => {
+              const activeCat = localCategories.find((c) => c.id === activeAdminCategoryId);
+              setShowNewForm((v) => !v);
+              setNewForm(activeCat
+                ? { ...emptyNewService, category: activeCat.name, category_id: activeCat.id }
+                : emptyNewService
+              );
+            }}
             className="flex items-center gap-1.5 rounded-full bg-[#c9a96e] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#b8954f]"
           >
             <Plus className="size-3.5" />
@@ -251,6 +271,31 @@ export function ServicesClient({
           </button>
         </div>
       </div>
+
+      {/* Category tabs */}
+      {localCategories.length > 0 && (
+        <div className="mb-6 flex gap-1 overflow-x-auto border-b border-border pb-0">
+          {localCategories.map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setActiveAdminCategoryId(cat.id)}
+              className={`flex shrink-0 items-center gap-1.5 rounded-t-md px-3 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                activeAdminCategoryId === cat.id
+                  ? "border-[#c9a96e] text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {cat.name}
+              {cat.is_system && (
+                <span className="rounded bg-muted px-1 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                  system
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Category manager */}
       {showCategoryManager && (
@@ -291,10 +336,10 @@ export function ServicesClient({
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDeleteCategory(cat.id)}
-                    disabled={categorySaving}
-                    className="rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
-                    title={`Delete category "${cat.name}"`}
+                    onClick={() => !cat.is_system && handleRequestDeleteCategory(cat)}
+                    disabled={categorySaving || cat.is_system}
+                    className="rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-40"
+                    title={cat.is_system ? "System category — cannot be deleted" : `Delete category "${cat.name}"`}
                   >
                     <X className="size-3.5" />
                   </button>
@@ -426,56 +471,72 @@ export function ServicesClient({
         </form>
       )}
 
-      {/* Service list */}
-      <div className="space-y-8">
-        {groupedCategories.map((cat) => (
-          <section key={cat}>
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {cat}
-            </h2>
-            <div className="space-y-4">
-              {localServices
-                .filter((s) => s.category === cat)
-                .sort((a, b) => a.display_order - b.display_order)
-                .map((svc) => (
-                  <ServiceCard
-                    key={svc.id}
-                    svc={svc}
-                    isEditing={editingId === svc.id}
-                    editValues={editValues}
-                    saving={saving}
-                    confirmDelete={confirmDeleteId === svc.id}
-                    onStartEdit={() => startEdit(svc)}
-                    onCancelEdit={() => setEditingId(null)}
-                    onSaveEdit={() => saveEdit(svc.id)}
-                    onEditChange={(field, value) =>
-                      setEditValues((prev) => (prev ? { ...prev, [field]: value } : prev))
-                    }
-                    onToggleVisibility={() => handleToggle(svc.id, svc.is_visible)}
-                    onRequestDelete={() => setConfirmDeleteId(svc.id)}
-                    onConfirmDelete={() => handleDelete(svc.id)}
-                    onCancelDelete={() => setConfirmDeleteId(null)}
-                    onUpsertPriceLine={handleUpsertPriceLine}
-                    onDeletePriceLine={(id) => handleDeletePriceLine(svc.id, id)}
-                  />
-                ))}
-            </div>
-          </section>
-        ))}
-
-        {localServices.length === 0 && !showNewForm && (
-          <p className="py-12 text-center text-sm text-muted-foreground">
-            No services yet.{" "}
-            <button
-              type="button"
-              onClick={() => setShowNewForm(true)}
-              className="text-[#c9a96e] underline-offset-2 hover:underline"
-            >
-              Add your first service
-            </button>
-          </p>
-        )}
+      {/* Service list — filtered to active category */}
+      <div className="space-y-4">
+        {(() => {
+          const activeCat = localCategories.find((c) => c.id === activeAdminCategoryId);
+          const filtered = localServices
+            .filter((s) =>
+              s.category_id
+                ? s.category_id === activeAdminCategoryId
+                : s.category === activeCat?.name
+            )
+            .sort((a, b) => a.display_order - b.display_order);
+          return filtered.length === 0 && !showNewForm ? (
+            <p className="py-12 text-center text-sm text-muted-foreground">
+              No services in this category.{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setNewForm(activeCat
+                    ? { ...emptyNewService, category: activeCat.name, category_id: activeCat.id }
+                    : emptyNewService
+                  );
+                  setShowNewForm(true);
+                }}
+                className="text-[#c9a96e] underline-offset-2 hover:underline"
+              >
+                Add the first service
+              </button>
+            </p>
+          ) : (
+            <>
+              {filtered.map((svc) => (
+                <ServiceCard
+                  key={svc.id}
+                  svc={svc}
+                  isEditing={editingId === svc.id}
+                  editValues={editValues}
+                  saving={saving}
+                  confirmDelete={confirmDeleteId === svc.id}
+                  onStartEdit={() => startEdit(svc)}
+                  onCancelEdit={() => setEditingId(null)}
+                  onSaveEdit={() => saveEdit(svc.id)}
+                  onEditChange={(field, value) =>
+                    setEditValues((prev) => (prev ? { ...prev, [field]: value } : prev))
+                  }
+                  onToggleVisibility={() => handleToggle(svc.id, svc.is_visible)}
+                  onRequestDelete={() => setConfirmDeleteId(svc.id)}
+                  onConfirmDelete={() => handleDelete(svc.id)}
+                  onCancelDelete={() => setConfirmDeleteId(null)}
+                  onUpsertPriceLine={handleUpsertPriceLine}
+                  onDeletePriceLine={(id) => handleDeletePriceLine(svc.id, id)}
+                />
+              ))}
+            </>
+          );
+        })()}
       </div>
+
+      {deleteCategoryTarget && (
+        <DeleteCategoryModal
+          category={deleteCategoryTarget}
+          serviceCount={deleteCategoryCount}
+          otherCategories={localCategories.filter((c) => c.id !== deleteCategoryTarget.id)}
+          onConfirm={(reassignToId) => handleDeleteCategory(deleteCategoryTarget.id, reassignToId)}
+          onCancel={() => setDeleteCategoryTarget(null)}
+        />
+      )}
     </div>
   );
 }
