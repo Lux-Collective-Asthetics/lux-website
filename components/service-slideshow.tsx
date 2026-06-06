@@ -70,8 +70,8 @@ export function ServiceSlideshow({ initialCategories, initialServiceGroups }: Pr
       <p className="mb-6 text-xs font-semibold uppercase tracking-[0.18em] text-champagne">
         / our services
       </p>
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
-        <div className="flex flex-col justify-center space-y-1 shrink-0 lg:w-64">
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[256px_1fr]">
+        <div className="flex flex-col justify-center space-y-1">
           {slides.map((slide, index) => (
             <CategoryItem
               key={slide.id}
@@ -82,7 +82,10 @@ export function ServiceSlideshow({ initialCategories, initialServiceGroups }: Pr
           ))}
         </div>
 
-        <HoverSliderImageWrap className="w-full min-h-[220px] max-h-[350px] rounded-lg overflow-hidden flex-1">
+        <HoverSliderImageWrap
+          className="rounded-lg overflow-hidden"
+          style={{ height: "clamp(260px, 45vw, 520px)" }}
+        >
           {slides.map((slide, index) => (
             <HoverSliderImage
               key={slide.id}
@@ -90,9 +93,10 @@ export function ServiceSlideshow({ initialCategories, initialServiceGroups }: Pr
               imageUrl={slide.imageUrl}
               src={slide.imageUrl}
               alt={slide.title}
-              className="size-full object-cover"
+              className="object-contain"
               loading="eager"
               decoding="async"
+              style={{ width: "100%", height: "100%" }}
             />
           ))}
         </HoverSliderImageWrap>
@@ -165,7 +169,7 @@ function PreviewStrip({
           {activeGroup.services.slice(0, 6).map((service) => (
             <div
               key={service.name}
-              className="shrink-0 rounded-lg border border-border bg-card px-4 py-3 min-w-[140px]"
+              className="shrink-0 rounded-lg border border-border bg-card px-4 py-3 min-w-35"
             >
               <p className="text-sm font-semibold text-foreground line-clamp-1">{service.name}</p>
               {service.summary && (

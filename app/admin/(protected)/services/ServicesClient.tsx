@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff, Pencil, Check, X, Plus, Trash2, ChevronDown, ChevronUp, Tag } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { CategoryManager } from "@/components/admin/CategoryManager";
@@ -222,12 +222,38 @@ export function ServicesClient({
     setDeleteCategoryTarget(cat);
   }
 
-  async function handleUpdateCategoryImage(id: string, url: string) {
+  async function handleUpdateCategoryImage(id: string, url: string | null) {
     await onUpdateCategoryImage(id, url);
     setLocalCategories((prev) =>
       prev.map((c) => (c.id === id ? { ...c, image_url: url } : c))
     );
   }
+
+  function closeNewForm() {
+    setShowNewForm(false);
+    setNewForm(emptyNewService);
+  }
+
+  function selectCategory(catId: string) {
+    if (showNewForm) {
+      closeNewForm();
+    }
+    setActiveAdminCategoryId(catId);
+    setShowCategoryManager(false);
+  }
+
+  useEffect(() => {
+    if (!showNewForm) return;
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeNewForm();
+      }
+    }
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [showNewForm]);
 
   return (
     <div>
@@ -252,12 +278,16 @@ export function ServicesClient({
           <button
             type="button"
             onClick={() => {
+              if (showNewForm) {
+                closeNewForm();
+                return;
+              }
               const activeCat = localCategories.find((c) => c.id === activeAdminCategoryId);
-              setShowNewForm((v) => !v);
               setNewForm(activeCat
                 ? { ...emptyNewService, category: activeCat.name, category_id: activeCat.id }
                 : emptyNewService
               );
+              setShowNewForm(true);
             }}
             className="flex items-center gap-1.5 rounded-full bg-[#c9a96e] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#b8954f]"
           >
@@ -274,7 +304,7 @@ export function ServicesClient({
             <button
               key={cat.id}
               type="button"
-              onClick={() => { setActiveAdminCategoryId(cat.id); setShowCategoryManager(false); }}
+              onClick={() => selectCategory(cat.id)}
               className={`flex shrink-0 items-center gap-1.5 rounded-t-md px-3 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
                 activeAdminCategoryId === cat.id
                   ? "border-[#c9a96e] text-foreground"
@@ -309,7 +339,17 @@ export function ServicesClient({
           onSubmit={handleCreate}
           className="mb-6 rounded-lg border border-[#c9a96e]/40 bg-card p-5"
         >
-          <h2 className="mb-4 text-sm font-semibold text-foreground">New service</h2>
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <h2 className="text-sm font-semibold text-foreground">New service</h2>
+            <button
+              type="button"
+              onClick={closeNewForm}
+              className="rounded p-1.5 text-muted-foreground hover:bg-muted"
+              aria-label="Close new service form"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label htmlFor="new-name" className="mb-1 block text-xs font-medium text-muted-foreground">
@@ -372,6 +412,7 @@ export function ServicesClient({
               <ImageUpload
                 bucket="lux-services"
                 onUpload={(url) => setNewForm((p) => ({ ...p, hero_image_url: url }))}
+                onRemove={() => setNewForm((p) => ({ ...p, hero_image_url: "" }))}
                 currentUrl={newForm.hero_image_url || undefined}
                 label="Service image"
               />
@@ -564,17 +605,26 @@ function ServiceCard({
                 <ImageUpload
                   bucket="lux-services"
                   onUpload={(url) => onEditChange("hero_image_url", url)}
+                  onRemove={() => onEditChange("hero_image_url", "")}
                   currentUrl={editValues.hero_image_url || undefined}
                   label="Service image"
                 />
               </div>
             </div>
           ) : (
-            <>
-              <p className="font-semibold text-foreground">{svc.name}</p>
-              {svc.duration && <p className="text-xs text-muted-foreground">{svc.duration}</p>}
-              <p className="mt-1 text-sm text-muted-foreground">{svc.summary}</p>
-            </>
+            <div className="flex items-start gap-3">
+              {svc.hero_image_url && (
+                <div className="size-12 shrink-0 overflow-hidden rounded border border-border">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={svc.hero_image_url} alt={svc.name} className="size-full object-cover" />
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="font-semibold text-foreground">{svc.name}</p>
+                {svc.duration && <p className="text-xs text-muted-foreground">{svc.duration}</p>}
+                <p className="mt-1 text-sm text-muted-foreground">{svc.summary}</p>
+              </div>
+            </div>
           )}
         </div>
 
@@ -632,7 +682,7 @@ function ServiceCard({
                 <>
                   <input value={editingPriceLabel} onChange={(e) => setEditingPriceLabel(e.target.value)}
                     placeholder="Label"
-                    className="min-w-[160px] rounded border border-border bg-background px-2 py-1 text-xs focus:outline-none" />
+                    className="min-w-40 rounded border border-border bg-background px-2 py-1 text-xs focus:outline-none" />
                   <input value={editingPriceValue} onChange={(e) => setEditingPriceValue(e.target.value)}
                     placeholder="Price"
                     className="w-24 rounded border border-border bg-background px-2 py-1 text-xs focus:outline-none" />

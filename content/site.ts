@@ -13,6 +13,7 @@ export type ServiceGroup = {
 export type Testimonial = {
   quote: string;
   author: string;
+  photo_url?: string | null;
 };
 
 export const business = {

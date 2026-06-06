@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Eye, EyeOff, Trash2, Pencil, X } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import type { DbTestimonial } from "@/lib/types/db";
 
@@ -35,6 +36,7 @@ export function TestimonialsClient({
     setItems(initialTestimonials);
   }
   const [panel, setPanel] = useState<PanelState>({ mode: "closed" });
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,9 +87,9 @@ export function TestimonialsClient({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this testimonial?")) return;
     await onDelete(id);
     setItems((prev) => prev.filter((t) => t.id !== id));
+    setConfirmId(null);
   }
 
   async function handleToggle(id: string, current: boolean) {
@@ -172,7 +174,7 @@ export function TestimonialsClient({
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleDelete(t.id)}
+                  onClick={() => setConfirmId(t.id)}
                   className="rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   aria-label="Delete testimonial"
                 >
@@ -228,6 +230,7 @@ export function TestimonialsClient({
                 <ImageUpload
                   bucket="lux-testimonials"
                   onUpload={setPhotoUrl}
+                  onRemove={() => setPhotoUrl("")}
                   currentUrl={photoUrl || undefined}
                   label="Client headshot"
                 />
@@ -246,6 +249,12 @@ export function TestimonialsClient({
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={confirmId !== null}
+        message="Delete this testimonial? This cannot be undone."
+        onConfirm={() => confirmId && handleDelete(confirmId)}
+        onCancel={() => setConfirmId(null)}
+      />
     </div>
   );
 }

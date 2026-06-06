@@ -38,7 +38,7 @@ function TestimonialsColumn({
         className="m-0 flex list-none flex-col gap-5 p-0 pb-5"
       >
         {[0, 1].map((pass) =>
-          testimonials.map(({ quote, author }, i) => (
+          testimonials.map(({ quote, author, photo_url }, i) => (
             <motion.li
               key={`${pass}-${i}`}
               aria-hidden={pass === 1 ? "true" : "false"}
@@ -49,7 +49,12 @@ function TestimonialsColumn({
               <blockquote className="m-0 p-0">
                 <p className="m-0 leading-relaxed text-muted-foreground">{quote}</p>
                 <footer className="mt-5 flex items-center gap-3">
-                  <Initials name={author} />
+                  {photo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={photo_url} alt={author} className="h-10 w-10 shrink-0 rounded-full object-cover ring-2 ring-taupe" />
+                  ) : (
+                    <Initials name={author} />
+                  )}
                   <cite className="not-italic font-semibold tracking-tight text-[var(--espresso)]">
                     {author}
                   </cite>

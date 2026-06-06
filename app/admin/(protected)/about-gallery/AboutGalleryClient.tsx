@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, Trash2, Eye, EyeOff, Pencil, X, Check } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import type { AboutGalleryPhoto } from "@/lib/types/db";
 
@@ -27,6 +28,7 @@ export function AboutGalleryClient({
   const [pendingCaption, setPendingCaption] = useState("");
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const [editCaption, setEditCaption] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -48,12 +50,13 @@ export function AboutGalleryClient({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Remove this photo from the About page gallery?")) return;
     try {
       await onDelete(id);
       setPhotos((prev) => prev.filter((p) => p.id !== id));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete photo");
+    } finally {
+      setConfirmId(null);
     }
   }
 
@@ -191,7 +194,7 @@ export function AboutGalleryClient({
                       <button
                         type="button"
                         aria-label="Delete photo"
-                        onClick={() => handleDelete(photo.id)}
+                        onClick={() => setConfirmId(photo.id)}
                         className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                       >
                         <Trash2 className="size-3.5" />
@@ -204,6 +207,13 @@ export function AboutGalleryClient({
           ))}
         </div>
       )}
+      <ConfirmDialog
+        open={confirmId !== null}
+        message="Remove this photo from the About page gallery?"
+        confirmLabel="Remove"
+        onConfirm={() => confirmId && handleDelete(confirmId)}
+        onCancel={() => setConfirmId(null)}
+      />
     </div>
   );
 }

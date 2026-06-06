@@ -36,9 +36,17 @@ export const HoverSlider = React.forwardRef<
 });
 HoverSlider.displayName = "HoverSlider";
 
+// Inactive images snap to hidden instantly so they don't cross-wipe with the
+// entering image and create a split-screen artifact.
 export const clipPathVariants = {
-  visible: { clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)" },
-  hidden:  { clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0px)" },
+  visible: {
+    clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+    transition: { ease: [0.33, 1, 0.68, 1] as [number, number, number, number], duration: 0.8 },
+  },
+  hidden: {
+    clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0px)",
+    transition: { duration: 0 },
+  },
 };
 
 export const HoverSliderImageWrap = React.forwardRef<
@@ -47,10 +55,7 @@ export const HoverSliderImageWrap = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn(
-      "grid overflow-hidden *:col-start-1 *:col-end-1 *:row-start-1 *:row-end-1 *:size-full",
-      className
-    )}
+    className={cn("relative overflow-hidden", className)}
     {...props}
   />
 ));
@@ -59,15 +64,16 @@ HoverSliderImageWrap.displayName = "HoverSliderImageWrap";
 export const HoverSliderImage = React.forwardRef<
   HTMLImageElement,
   HTMLMotionProps<"img"> & HoverSliderImageProps
->(({ index, imageUrl, className, ...props }, ref) => {
+>(({ index, imageUrl, className, style, ...props }, ref) => {
   const { activeSlide } = useHoverSliderContext();
+  const isActive = activeSlide === index;
   return (
     <motion.img
       src={imageUrl}
-      className={cn("inline-block align-middle", className)}
-      transition={{ ease: [0.33, 1, 0.68, 1], duration: 0.8 }}
+      className={cn("absolute inset-0 block w-full h-full object-contain", className)}
       variants={clipPathVariants}
-      animate={activeSlide === index ? "visible" : "hidden"}
+      animate={isActive ? "visible" : "hidden"}
+      style={{ zIndex: isActive ? 1 : 0, ...style }}
       ref={ref}
       {...props}
     />

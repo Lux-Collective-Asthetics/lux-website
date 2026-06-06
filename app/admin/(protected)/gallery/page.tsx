@@ -11,10 +11,12 @@ import type { GalleryImage } from "@/lib/types/db";
 
 export default async function GalleryAdminPage() {
   const supabase = createServiceClient();
-  const { data: images } = await supabase
-    .from("gallery_images")
-    .select("*")
-    .order("display_order");
+  const [{ data: images }, { data: categories }] = await Promise.all([
+    supabase.from("gallery_images").select("*").order("display_order"),
+    supabase.from("service_categories").select("name").eq("is_system", false).order("display_order"),
+  ]);
+
+  const categoryNames = (categories ?? []).map((c: { name: string }) => c.name);
 
   return (
     <div>
@@ -25,7 +27,7 @@ export default async function GalleryAdminPage() {
             Manage before/after image pairs. Drag to reorder.
           </p>
         </div>
-        <UploadGalleryModal onSubmit={createGalleryImage} />
+        <UploadGalleryModal categories={categoryNames} onSubmit={createGalleryImage} />
       </div>
 
       {images && images.length > 0 ? (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ImageIcon, X } from "lucide-react";
+import { ImageIcon, Trash2, X } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { cn } from "@/lib/utils";
 import type { ServiceCategory } from "@/lib/types/db";
@@ -11,7 +11,7 @@ interface Props {
   saving: boolean;
   onAdd: (name: string) => Promise<void>;
   onRequestDelete: (cat: ServiceCategory) => void;
-  onUpdateImage: (id: string, url: string) => Promise<void>;
+  onUpdateImage: (id: string, url: string | null) => Promise<void>;
 }
 
 export function CategoryManager({ categories, saving, onAdd, onRequestDelete, onUpdateImage }: Props) {
@@ -57,10 +57,20 @@ export function CategoryManager({ categories, saving, onAdd, onRequestDelete, on
           <div key={cat.id}>
             <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-2">
               {/* Thumbnail */}
-              <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded bg-muted">
+              <div className="group/thumb relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded bg-muted">
                 {cat.image_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={cat.image_url} alt={cat.name} className="size-full object-cover" />
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={cat.image_url} alt={cat.name} className="size-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateImage(cat.id, null)}
+                      className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover/thumb:opacity-100"
+                      title="Remove image"
+                    >
+                      <Trash2 className="size-3.5 text-white" />
+                    </button>
+                  </>
                 ) : (
                   <ImageIcon className="size-4 text-muted-foreground" />
                 )}
@@ -118,6 +128,16 @@ export function CategoryManager({ categories, saving, onAdd, onRequestDelete, on
                   currentUrl={cat.image_url || undefined}
                   label={`${cat.name} category image`}
                 />
+                {cat.image_url && (
+                  <button
+                    type="button"
+                    onClick={() => handleUpdateImage(cat.id, null)}
+                    className="mt-2 flex items-center gap-1.5 rounded border border-destructive/40 px-2.5 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    <Trash2 className="size-3.5" />
+                    Remove image
+                  </button>
+                )}
               </div>
             )}
           </div>

@@ -59,7 +59,7 @@ export function GalleryFilter({ images: initialImages, serviceCategories: initia
               {image.category}
             </div>
 
-            <div className="relative flex h-full w-full transition-transform duration-300 group-hover:scale-[1.02]">
+            <div className="absolute inset-0 flex transition-transform duration-300 group-hover:scale-[1.02]">
               <div className="relative h-full w-1/2 overflow-hidden">
                 <Image
                   src={image.before_url}

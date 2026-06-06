@@ -21,6 +21,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Eye, EyeOff, Trash2, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { GalleryImage } from "@/lib/types/db";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 type Props = {
   initialImages: GalleryImage[];
@@ -37,6 +38,7 @@ export function GalleryGrid({
 }: Props) {
   const [images, setImages] = useState(initialImages);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -65,13 +67,13 @@ export function GalleryGrid({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this image pair? This cannot be undone.")) return;
     setDeleting(id);
     try {
       await onDelete(id);
       setImages((prev) => prev.filter((i) => i.id !== id));
     } finally {
       setDeleting(null);
+      setConfirmId(null);
     }
   }
 
@@ -104,12 +106,18 @@ export function GalleryGrid({
                   throw err;
                 }
               }}
-              onDelete={handleDelete}
+              onDelete={() => setConfirmId(image.id)}
               isDeleting={deleting === image.id}
             />
           ))}
         </div>
       </SortableContext>
+      <ConfirmDialog
+        open={confirmId !== null}
+        message="Delete this before/after image pair? This cannot be undone."
+        onConfirm={() => confirmId && handleDelete(confirmId)}
+        onCancel={() => setConfirmId(null)}
+      />
     </DndContext>
   );
 }

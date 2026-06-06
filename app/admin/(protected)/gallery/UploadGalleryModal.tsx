@@ -4,14 +4,8 @@ import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 
-const CATEGORIES = [
-  "Injectables",
-  "Laser Treatments",
-  "Regenerative Treatments",
-  "Wellness",
-];
-
 type Props = {
+  categories: string[];
   onSubmit: (data: {
     title: string;
     category: string;
@@ -21,11 +15,11 @@ type Props = {
   }) => Promise<void>;
 };
 
-export function UploadGalleryModal({ onSubmit }: Props) {
+export function UploadGalleryModal({ categories, onSubmit }: Props) {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [category, setCategory] = useState(categories[0] ?? "");
   const [caption, setCaption] = useState("");
   const [beforeUrl, setBeforeUrl] = useState("");
   const [afterUrl, setAfterUrl] = useState("");
@@ -36,7 +30,7 @@ export function UploadGalleryModal({ onSubmit }: Props) {
   function handleClose() {
     setOpen(false);
     setTitle("");
-    setCategory(CATEGORIES[0]);
+    setCategory(categories[0] ?? "");
     setCaption("");
     setBeforeUrl("");
     setAfterUrl("");
@@ -113,7 +107,7 @@ export function UploadGalleryModal({ onSubmit }: Props) {
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
                 >
-                  {CATEGORIES.map((c) => (
+                  {categories.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
                 </select>

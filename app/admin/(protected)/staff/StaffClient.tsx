@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, Eye, EyeOff, Trash2, Pencil, X, Images } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import type { StaffMember, DbService, StaffPhoto } from "@/lib/types/db";
 
@@ -92,6 +93,7 @@ export function StaffClient({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [addingPhotoFor, setAddingPhotoFor] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ type: "member"; id: string } | { type: "photo"; staffId: string; photoId: string } | null>(null);
 
   function openCreate() {
     setForm(EMPTY_FORM);
@@ -172,9 +174,9 @@ export function StaffClient({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this staff member?")) return;
     await onDelete(id);
     setStaff((prev) => prev.filter((m) => m.id !== id));
+    setConfirmDelete(null);
   }
 
   async function handleToggle(id: string, current: boolean) {
@@ -194,12 +196,12 @@ export function StaffClient({
   }
 
   async function handleDeletePhoto(staffId: string, photoId: string) {
-    if (!confirm("Remove this photo?")) return;
     await onDeletePhoto(photoId);
     setPhotoMap((prev) => ({
       ...prev,
       [staffId]: (prev[staffId] ?? []).filter((p) => p.id !== photoId),
     }));
+    setConfirmDelete(null);
   }
 
   const editMemberId = panel.mode === "edit" ? panel.member.id : null;
@@ -316,7 +318,7 @@ export function StaffClient({
                 <button
                   type="button"
                   aria-label="Delete staff member"
-                  onClick={() => handleDelete(member.id)}
+                  onClick={() => setConfirmDelete({ type: "member", id: member.id })}
                   className="ml-auto rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                 >
                   <Trash2 className="size-4" />
@@ -406,6 +408,7 @@ export function StaffClient({
                 <ImageUpload
                   bucket="lux-staff"
                   onUpload={(url) => setField("photo_url", url)}
+                  onRemove={() => setField("photo_url", "")}
                   currentUrl={form.photo_url || undefined}
                   label="Staff headshot"
                 />
@@ -441,7 +444,7 @@ export function StaffClient({
                           />
                           <button
                             type="button"
-                            onClick={() => handleDeletePhoto(editMemberId, photo.id)}
+                            onClick={() => setConfirmDelete({ type: "photo", staffId: editMemberId, photoId: photo.id })}
                             aria-label="Remove photo"
                             className="absolute right-1 top-1 hidden rounded-full bg-background/90 p-0.5 group-hover:flex"
                           >
@@ -497,6 +500,21 @@ export function StaffClient({
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        message={
+          confirmDelete?.type === "member"
+            ? "Delete this staff member? This cannot be undone."
+            : "Remove this photo?"
+        }
+        confirmLabel={confirmDelete?.type === "member" ? "Delete" : "Remove"}
+        onConfirm={() => {
+          if (!confirmDelete) return;
+          if (confirmDelete.type === "member") handleDelete(confirmDelete.id);
+          else handleDeletePhoto(confirmDelete.staffId, confirmDelete.photoId);
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }
