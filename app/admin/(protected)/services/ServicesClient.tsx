@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff, Pencil, Check, X, Plus, Trash2, ChevronDown, ChevronUp, Tag, ImageIcon } from "lucide-react";
+import { Eye, EyeOff, Pencil, Check, X, Plus, Trash2, ChevronDown, ChevronUp, Tag } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { CategoryManager } from "@/components/admin/CategoryManager";
 import { DeleteCategoryModal } from "@/components/admin/DeleteCategoryModal";
 import { cn } from "@/lib/utils";
 import type { DbService, DbServiceWithPrices, ServiceCategory, ServicePriceLine } from "@/lib/types/db";
@@ -68,9 +69,7 @@ export function ServicesClient({
   const [newFormSaving, setNewFormSaving] = useState(false);
 
   const [showCategoryManager, setShowCategoryManager] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState("");
   const [categorySaving, setCategorySaving] = useState(false);
-  const [editingCategoryImageId, setEditingCategoryImageId] = useState<string | null>(null);
 
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
@@ -192,14 +191,11 @@ export function ServicesClient({
 
   // ── Category management ──────────────────────────────────────────────────
 
-  async function handleCreateCategory() {
-    const name = newCategoryName.trim();
-    if (!name) return;
+  async function handleCreateCategory(name: string) {
     setCategorySaving(true);
     try {
       const cat = await onCreateCategory(name);
       setLocalCategories((prev) => [...prev, cat]);
-      setNewCategoryName("");
     } finally {
       setCategorySaving(false);
     }
@@ -231,7 +227,6 @@ export function ServicesClient({
     setLocalCategories((prev) =>
       prev.map((c) => (c.id === id ? { ...c, image_url: url } : c))
     );
-    setEditingCategoryImageId(null);
   }
 
   return (
@@ -279,7 +274,7 @@ export function ServicesClient({
             <button
               key={cat.id}
               type="button"
-              onClick={() => setActiveAdminCategoryId(cat.id)}
+              onClick={() => { setActiveAdminCategoryId(cat.id); setShowCategoryManager(false); }}
               className={`flex shrink-0 items-center gap-1.5 rounded-t-md px-3 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
                 activeAdminCategoryId === cat.id
                   ? "border-[#c9a96e] text-foreground"
@@ -299,83 +294,13 @@ export function ServicesClient({
 
       {/* Category manager */}
       {showCategoryManager && (
-        <div className="mb-6 rounded-lg border border-border bg-card p-4">
-          <h2 className="mb-3 text-sm font-semibold text-foreground">Manage service categories</h2>
-          {localCategories.length === 0 && (
-            <p className="mb-3 text-xs text-muted-foreground">
-              No categories yet. Run the migration in Supabase SQL Editor first:
-              <code className="ml-1 rounded bg-muted px-1 py-0.5 text-xs">
-                supabase/migrations/003_service_categories.sql
-              </code>
-            </p>
-          )}
-          <div className="mb-3 space-y-2">
-            {localCategories.map((cat) => (
-              <div key={cat.id}>
-                <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-2">
-                  {/* Thumbnail */}
-                  <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded bg-muted">
-                    {cat.image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={cat.image_url} alt={cat.name} className="size-full object-cover" />
-                    ) : (
-                      <ImageIcon className="size-4 text-muted-foreground" />
-                    )}
-                  </div>
-                  <span className="flex-1 text-sm font-medium">{cat.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => setEditingCategoryImageId((prev) => prev === cat.id ? null : cat.id)}
-                    className={cn(
-                      "rounded p-1.5 text-muted-foreground hover:bg-muted",
-                      editingCategoryImageId === cat.id && "bg-muted text-foreground"
-                    )}
-                    title="Edit category image"
-                  >
-                    <ImageIcon className="size-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => !cat.is_system && handleRequestDeleteCategory(cat)}
-                    disabled={categorySaving || cat.is_system}
-                    className="rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-40"
-                    title={cat.is_system ? "System category — cannot be deleted" : `Delete category "${cat.name}"`}
-                  >
-                    <X className="size-3.5" />
-                  </button>
-                </div>
-                {editingCategoryImageId === cat.id && (
-                  <div className="mt-1 rounded-lg border border-border bg-muted/30 p-3">
-                    <p className="mb-2 text-xs font-medium text-muted-foreground">Category image (shown in slideshow and homepage)</p>
-                    <ImageUpload
-                      bucket="lux-services"
-                      onUpload={(url) => handleUpdateCategoryImage(cat.id, url)}
-                      currentUrl={cat.image_url || undefined}
-                      label={`${cat.name} category image`}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <input
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCreateCategory(); } }}
-              placeholder="New category name"
-              className="flex-1 rounded border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#c9a96e]"
-            />
-            <button
-              type="button"
-              onClick={handleCreateCategory}
-              disabled={!newCategoryName.trim() || categorySaving}
-              className="rounded border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:opacity-50"
-            >
-              Add
-            </button>
-          </div>
-        </div>
+        <CategoryManager
+          categories={localCategories}
+          saving={categorySaving}
+          onAdd={handleCreateCategory}
+          onRequestDelete={handleRequestDeleteCategory}
+          onUpdateImage={handleUpdateCategoryImage}
+        />
       )}
 
       {/* New service form */}
