@@ -29,14 +29,17 @@ async function main() {
   console.log("Caching staff_services before reseed...");
   const { data: ssRows, error: ssReadErr } = await supabase
     .from("staff_services")
-    .select("staff_id, service_id, services(name)");
+    .select("staff_id, service_id, services(name, category)");
   if (ssReadErr) throw new Error(`Failed to read staff_services: ${ssReadErr.message}`);
 
-  type CachedLink = { staff_id: string; serviceName: string };
-  const cachedLinks: CachedLink[] = (ssRows ?? []).map((row) => ({
-    staff_id: row.staff_id as string,
-    serviceName: ((row.services as unknown) as { name: string } | null)?.name ?? "",
-  }));
+  type CachedLink = { staff_id: string; serviceKey: string };
+  const cachedLinks: CachedLink[] = (ssRows ?? []).map((row) => {
+    const svc = (row.services as unknown) as { name: string; category: string } | null;
+    return {
+      staff_id: row.staff_id as string,
+      serviceKey: svc ? `${svc.category}::${svc.name}` : "",
+    };
+  });
   console.log(`  Cached ${cachedLinks.length} staff assignment(s).`);
 
   console.log("Clearing existing services (price lines and staff_services cascade)...");
@@ -69,7 +72,7 @@ async function main() {
 
       if (svcErr) throw new Error(`Service insert failed for "${svc.name}": ${svcErr.message}`);
 
-      nameToNewId.set(svc.name, serviceRow.id);
+      nameToNewId.set(`${group.name}::${svc.name}`, serviceRow.id);
 
       const priceLines = svc.priceLines.map((line, idx) => ({
         service_id: serviceRow.id,
@@ -96,8 +99,8 @@ async function main() {
   if (cachedLinks.length > 0) {
     console.log("Restoring staff_services...");
     const restoredLinks = cachedLinks
-      .filter((l) => nameToNewId.has(l.serviceName))
-      .map((l) => ({ staff_id: l.staff_id, service_id: nameToNewId.get(l.serviceName)! }));
+      .filter((l) => l.serviceKey && nameToNewId.has(l.serviceKey))
+      .map((l) => ({ staff_id: l.staff_id, service_id: nameToNewId.get(l.serviceKey)! }));
 
     const skipped = cachedLinks.length - restoredLinks.length;
     if (skipped > 0) {

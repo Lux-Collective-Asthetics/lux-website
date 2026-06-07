@@ -5,10 +5,11 @@ import type { NewsletterSend } from "@/lib/types/db";
 
 export default async function NewslettersAdminPage() {
   const supabase = createServiceClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("newsletter_sends")
     .select("*")
     .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
 
   return (
     <NewslettersClient

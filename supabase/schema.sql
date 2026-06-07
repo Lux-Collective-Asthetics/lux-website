@@ -1,11 +1,21 @@
 -- Lux Collective — full database schema
 -- Run once in Supabase Dashboard → SQL Editor
 
+create table if not exists service_categories (
+  id            uuid primary key default gen_random_uuid(),
+  name          text not null unique,
+  display_order integer not null default 0,
+  is_system     boolean not null default false,
+  image_url     text,
+  created_at    timestamptz not null default now()
+);
+
 create table if not exists services (
   id            uuid primary key default gen_random_uuid(),
   name          text not null,
   summary       text not null default '',
   category      text not null,
+  category_id   uuid references service_categories(id) on delete set null,
   duration      text,
   hero_image_url text,
   display_order integer not null default 0,
@@ -50,15 +60,6 @@ create table if not exists gallery_images (
   caption       text,
   display_order integer not null default 0,
   is_visible    boolean not null default true,
-  created_at    timestamptz not null default now()
-);
-
-create table if not exists service_categories (
-  id            uuid primary key default gen_random_uuid(),
-  name          text not null unique,
-  display_order integer not null default 0,
-  is_system     boolean not null default false,
-  image_url     text,
   created_at    timestamptz not null default now()
 );
 

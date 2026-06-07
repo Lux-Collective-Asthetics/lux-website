@@ -25,12 +25,11 @@ export default async function ServicesAdminPage() {
 
   // Tolerate missing service_categories table if migration not yet run; rethrow other errors.
   if (categoriesRes.error) {
-    const msg = categoriesRes.error.message;
+    const err = categoriesRes.error;
     const isMissingTable =
-      msg.includes("service_categories") ||
-      msg.includes("42P01") ||
-      msg.toLowerCase().includes("does not exist");
-    if (!isMissingTable) throw new Error(msg);
+      err.code === "42P01" ||
+      /relation .* does not exist/i.test(err.message);
+    if (!isMissingTable) throw new Error(err.message);
   }
   const categories = (!categoriesRes.error ? (categoriesRes.data ?? []) : []) as ServiceCategory[];
 

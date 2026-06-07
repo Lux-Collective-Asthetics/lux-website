@@ -188,12 +188,14 @@ export async function deleteServiceCategory(id: string, reassignToId?: string) {
   await requireAdmin();
   const supabase = createServiceClient();
 
-  const { data: toDelete } = await supabase
+  const { data: toDelete, error: fetchError } = await supabase
     .from("service_categories")
     .select("is_system")
     .eq("id", id)
     .maybeSingle();
-  if (toDelete?.is_system) throw new Error("Cannot delete a system category.");
+  if (fetchError) throw new Error(fetchError.message);
+  if (!toDelete) throw new Error("Category not found.");
+  if (toDelete.is_system) throw new Error("Cannot delete a system category.");
   if (reassignToId === id) throw new Error("Cannot reassign a category to itself.");
 
   let targetId = reassignToId;

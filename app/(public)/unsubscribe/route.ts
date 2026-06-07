@@ -73,6 +73,9 @@ export async function POST(request: NextRequest) {
   }
 
   if (subscriber.status === "unsubscribed") {
+    await removeContact(subscriber.email).catch((err) =>
+      console.error("[resend] removeContact failed:", err)
+    );
     redirect("/unsubscribed?result=already");
   }
 

@@ -36,22 +36,26 @@ function TiptapToolbar({ editor }: { editor: Editor | null }) {
     <div className="flex flex-wrap gap-1 border-b border-border p-2">
       <button
         type="button"
-        onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBold().run(); }}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => editor.chain().focus().toggleBold().run()}
         className={cn("rounded px-2 py-1 text-sm font-bold", editor.isActive("bold") ? "bg-admin-gold text-white" : "hover:bg-muted")}
       >B</button>
       <button
         type="button"
-        onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleItalic().run(); }}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => editor.chain().focus().toggleItalic().run()}
         className={cn("rounded px-2 py-1 text-sm italic", editor.isActive("italic") ? "bg-admin-gold text-white" : "hover:bg-muted")}
       >I</button>
       <button
         type="button"
-        onMouseDown={(e) => { e.preventDefault(); setLink(); }}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={setLink}
         className={cn("rounded px-2 py-1 text-sm", editor.isActive("link") ? "bg-admin-gold text-white" : "hover:bg-muted")}
       >Link</button>
       <button
         type="button"
-        onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBulletList().run(); }}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
         className={cn("rounded px-2 py-1 text-sm", editor.isActive("bulletList") ? "bg-admin-gold text-white" : "hover:bg-muted")}
       >• List</button>
     </div>
@@ -104,7 +108,15 @@ export function NewslettersClient({ initialSends, onSend }: Props) {
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
     const bodyHtml = editor?.getHTML() ?? "";
-    if (!sendSubject.trim() || !bodyHtml.trim() || bodyHtml === "<p></p>") return;
+    const bodyText = editor?.getText().trim() ?? "";
+    if (!sendSubject.trim()) {
+      setSendError("Please enter a subject line.");
+      return;
+    }
+    if (!bodyText) {
+      setSendError("Please enter a message body.");
+      return;
+    }
     setSending(true);
     setSendError(null);
     try {
