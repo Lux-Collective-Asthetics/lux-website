@@ -30,6 +30,19 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = createServiceClient();
+
+  if (event.type === "contact.unsubscribed") {
+    const email = event.data?.email as string | undefined;
+    if (email) {
+      await supabase
+        .from("subscribers")
+        .update({ status: "unsubscribed", unsubscribed_at: new Date().toISOString() })
+        .eq("email", email)
+        .eq("status", "active");
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   const broadcastId = event.data?.broadcast_id as string | undefined;
 
   if (!broadcastId) {
