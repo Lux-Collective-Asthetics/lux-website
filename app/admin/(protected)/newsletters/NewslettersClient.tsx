@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X, Mail, MousePointerClick, Users, Send } from "lucide-react";
+import { X, Mail, MousePointerClick, Users, Send } from "lucide-react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import type { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
@@ -11,13 +11,6 @@ import type { NewsletterSend } from "@/lib/types/db";
 
 type Props = {
   initialSends: NewsletterSend[];
-  onCreate: (data: {
-    campaign_name: string;
-    subject: string;
-    resend_broadcast_id: string;
-    sent_at: string;
-    recipient_count: number;
-  }) => Promise<void>;
   onSend: (data: {
     subject: string;
     bodyHtml: string;
@@ -65,20 +58,9 @@ function TiptapToolbar({ editor }: { editor: Editor | null }) {
   );
 }
 
-export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
+export function NewslettersClient({ initialSends, onSend }: Props) {
   const [sends, setSends] = useState(initialSends);
 
-  // "Log Campaign" modal state (existing)
-  const [showForm, setShowForm] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [subject, setSubject] = useState("");
-  const [broadcastId, setBroadcastId] = useState("");
-  const [sentAt, setSentAt] = useState("");
-  const [recipients, setRecipients] = useState("");
-
-  // "Send Newsletter" modal state (new)
   const [showSendModal, setShowSendModal] = useState(false);
   const [sendSubject, setSendSubject] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
@@ -117,43 +99,6 @@ export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
       day: "numeric",
       year: "numeric",
     });
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!name || !subject || !broadcastId) return;
-    setSubmitting(true);
-    setError(null);
-    try {
-      const recipientCount = parseInt(recipients, 10) || 0;
-      await onCreate({
-        campaign_name: name,
-        subject,
-        resend_broadcast_id: broadcastId,
-        sent_at: sentAt,
-        recipient_count: recipientCount,
-      });
-      setSends((prev) => [
-        {
-          id: crypto.randomUUID(),
-          campaign_name: name,
-          subject,
-          resend_broadcast_id: broadcastId,
-          sent_at: sentAt || null,
-          recipient_count: recipientCount,
-          open_count: 0,
-          click_count: 0,
-          created_at: new Date().toISOString(),
-        },
-        ...prev,
-      ]);
-      setShowForm(false);
-      setName(""); setSubject(""); setBroadcastId(""); setSentAt(""); setRecipients("");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save");
-    } finally {
-      setSubmitting(false);
-    }
   }
 
   async function handleSend(e: React.FormEvent) {
@@ -207,22 +152,13 @@ export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
             Compose and send newsletters. Open/click counts update automatically via Resend webhook.
           </p>
         </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setShowSendModal(true)}
-            className="flex items-center gap-2 rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark"
-          >
-            <Send className="size-4" /> Send Newsletter
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
-          >
-            <Plus className="size-4" /> Log Campaign
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setShowSendModal(true)}
+          className="flex items-center gap-2 rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark"
+        >
+          <Send className="size-4" /> Send Newsletter
+        </button>
       </div>
 
       {sends.length === 0 ? (
@@ -359,91 +295,6 @@ export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
         </div>
       )}
 
-      {/* Log Campaign modal (existing, unchanged logic) */}
-      {showForm && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onMouseDown={() => setShowForm(false)}
-        >
-          <div
-            className="w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-2xl"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Log Campaign</h2>
-              <button type="button" onClick={() => setShowForm(false)}>
-                <X className="size-5 text-muted-foreground" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium">Campaign Name</label>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  placeholder="May 2026 Newsletter"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Subject Line</label>
-                <input
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  required
-                  placeholder="Summer skincare tips from Lux..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Resend Broadcast ID</label>
-                <input
-                  value={broadcastId}
-                  onChange={(e) => setBroadcastId(e.target.value)}
-                  required
-                  placeholder="broadcast_abc123..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
-                />
-                <p className="mt-1 text-xs text-muted-foreground">Found in Resend dashboard → Broadcasts</p>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Sent At</label>
-                  <input
-                    type="date"
-                    value={sentAt}
-                    onChange={(e) => setSentAt(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Recipients</label>
-                  <input
-                    type="number"
-                    value={recipients}
-                    onChange={(e) => setRecipients(e.target.value)}
-                    placeholder="0"
-                    min="0"
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
-                  />
-                </div>
-              </div>
-
-              {error && <p className="text-sm text-destructive">{error}</p>}
-
-              <button
-                type="submit"
-                disabled={!name || !subject || !broadcastId || submitting}
-                className="w-full rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark disabled:opacity-50"
-              >
-                {submitting ? "Saving..." : "Log Campaign"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

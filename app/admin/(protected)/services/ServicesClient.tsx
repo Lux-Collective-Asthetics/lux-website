@@ -443,9 +443,11 @@ export function ServicesClient({
           const activeCat = localCategories.find((c) => c.id === activeAdminCategoryId);
           const filtered = localServices
             .filter((s) =>
-              s.category_id
-                ? s.category_id === activeAdminCategoryId
-                : s.category === activeCat?.name
+              localCategories.length === 0 || activeAdminCategoryId === null
+                ? true
+                : s.category_id
+                  ? s.category_id === activeAdminCategoryId
+                  : s.category === activeCat?.name
             )
             .sort((a, b) => a.display_order - b.display_order);
           return filtered.length === 0 && !showNewForm ? (

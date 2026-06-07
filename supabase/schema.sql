@@ -31,6 +31,7 @@ create table if not exists staff_members (
   booking_url   text,
   display_order integer not null default 0,
   is_visible    boolean not null default true,
+  is_owner      boolean not null default false,
   created_at    timestamptz not null default now()
 );
 
@@ -46,6 +47,32 @@ create table if not exists gallery_images (
   category      text not null,
   before_url    text not null,
   after_url     text not null,
+  caption       text,
+  display_order integer not null default 0,
+  is_visible    boolean not null default true,
+  created_at    timestamptz not null default now()
+);
+
+create table if not exists service_categories (
+  id            uuid primary key default gen_random_uuid(),
+  name          text not null unique,
+  display_order integer not null default 0,
+  is_system     boolean not null default false,
+  image_url     text,
+  created_at    timestamptz not null default now()
+);
+
+create table if not exists staff_photos (
+  id            uuid primary key default gen_random_uuid(),
+  staff_id      uuid not null references staff_members(id) on delete cascade,
+  photo_url     text not null,
+  display_order integer not null default 0,
+  created_at    timestamptz not null default now()
+);
+
+create table if not exists about_gallery (
+  id            uuid primary key default gen_random_uuid(),
+  photo_url     text not null,
   caption       text,
   display_order integer not null default 0,
   is_visible    boolean not null default true,
@@ -85,16 +112,20 @@ create table if not exists newsletter_sends (
 );
 
 -- Enable Row Level Security on all tables
-alter table services           enable row level security;
-alter table service_price_lines enable row level security;
-alter table staff_members      enable row level security;
-alter table staff_services     enable row level security;
-alter table gallery_images     enable row level security;
-alter table testimonials       enable row level security;
-alter table subscribers        enable row level security;
-alter table newsletter_sends   enable row level security;
+alter table services              enable row level security;
+alter table service_price_lines   enable row level security;
+alter table service_categories    enable row level security;
+alter table staff_members         enable row level security;
+alter table staff_services        enable row level security;
+alter table staff_photos          enable row level security;
+alter table about_gallery         enable row level security;
+alter table gallery_images        enable row level security;
+alter table testimonials          enable row level security;
+alter table subscribers           enable row level security;
+alter table newsletter_sends      enable row level security;
 
 -- Public read access for visible content
+create policy "public read service_categories" on service_categories for select using (true);
 create policy "public read services"        on services           for select using (is_visible = true);
 create policy "public read price lines"     on service_price_lines for select
   using (exists (select 1 from services s where s.id = service_price_lines.service_id and s.is_visible));
@@ -106,6 +137,11 @@ create policy "public read staff_services"  on staff_services     for select
   );
 create policy "public read gallery"         on gallery_images     for select using (is_visible = true);
 create policy "public read testimonials"    on testimonials       for select using (is_visible = true);
+create policy "public read staff_photos"    on staff_photos       for select
+  using (
+    exists (select 1 from staff_members sm where sm.id = staff_photos.staff_id and sm.is_visible = true)
+  );
+create policy "public read about_gallery"   on about_gallery      for select using (is_visible = true);
 
 -- Service role bypasses RLS (used by server actions and seed script)
 grant usage on schema public to service_role;
@@ -120,3 +156,6 @@ grant select on all tables in schema public to anon, authenticated;
 create index if not exists idx_service_price_lines_service_id on service_price_lines(service_id);
 create index if not exists idx_staff_services_service_id on staff_services(service_id);
 create index if not exists idx_gallery_images_display_order on gallery_images(display_order);
+create index if not exists idx_staff_photos_staff_id on staff_photos(staff_id, display_order);
+create index if not exists idx_about_gallery_display_order on about_gallery(display_order);
+create index if not exists idx_service_categories_display_order on service_categories(display_order);

@@ -34,11 +34,15 @@ export async function POST(request: NextRequest) {
   if (event.type === "contact.unsubscribed") {
     const email = event.data?.email as string | undefined;
     if (email) {
-      await supabase
+      const { error: updateError } = await supabase
         .from("subscribers")
         .update({ status: "unsubscribed", unsubscribed_at: new Date().toISOString() })
         .eq("email", email)
         .eq("status", "active");
+      if (updateError) {
+        console.error("[webhook] failed to mark subscriber unsubscribed:", updateError.message);
+        return NextResponse.json({ error: "DB update failed" }, { status: 500 });
+      }
     }
     return NextResponse.json({ ok: true });
   }

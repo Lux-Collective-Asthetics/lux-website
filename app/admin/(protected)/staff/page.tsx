@@ -30,7 +30,16 @@ export default async function StaffAdminPage() {
     staffServiceMap[row.staff_id].push(row.service_id);
   }
 
-  // staff_photos may not exist yet if migration hasn't been run — treat as empty
+  // staff_photos may not exist yet if migration hasn't been run — treat as empty.
+  // Rethrow any error that isn't a missing-table error.
+  if (staffPhotosRes.error) {
+    const msg = staffPhotosRes.error.message;
+    const isMissingTable =
+      msg.includes("staff_photos") ||
+      msg.includes("42P01") ||
+      msg.toLowerCase().includes("does not exist");
+    if (!isMissingTable) throw new Error(msg);
+  }
   const staffPhotosMap: Record<string, StaffPhoto[]> = {};
   for (const row of (!staffPhotosRes.error ? (staffPhotosRes.data ?? []) : []) as StaffPhoto[]) {
     if (!staffPhotosMap[row.staff_id]) staffPhotosMap[row.staff_id] = [];

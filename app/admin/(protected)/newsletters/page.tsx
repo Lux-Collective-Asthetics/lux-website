@@ -1,6 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { NewslettersClient } from "./NewslettersClient";
-import { createNewsletterSend, sendNewsletter } from "./actions";
+import { sendNewsletter } from "./actions";
 import type { NewsletterSend } from "@/lib/types/db";
 
 export default async function NewslettersAdminPage() {
@@ -13,7 +13,6 @@ export default async function NewslettersAdminPage() {
   return (
     <NewslettersClient
       initialSends={(data ?? []) as NewsletterSend[]}
-      onCreate={createNewsletterSend}
       onSend={sendNewsletter}
     />
   );

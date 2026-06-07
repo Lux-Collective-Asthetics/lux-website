@@ -27,9 +27,10 @@ export async function addAboutGalleryPhoto(
 ): Promise<AboutGalleryPhoto> {
   await requireAdmin();
   const supabase = createServiceClient();
-  const { count } = await supabase
+  const { count, error: countError } = await supabase
     .from("about_gallery")
     .select("*", { count: "exact", head: true });
+  if (countError) throw new Error(countError.message);
   const { data, error } = await supabase
     .from("about_gallery")
     .insert({ photo_url: photoUrl, caption: caption || null, display_order: count ?? 0, is_visible: true })

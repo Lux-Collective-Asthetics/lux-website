@@ -49,20 +49,23 @@ export function PublicStaffSection({
     const mainPhotoUrl = member.photo_url;
     let cancelled = false;
     async function load() {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("staff_photos")
-        .select("photo_url")
-        .eq("staff_id", staffId)
-        .order("display_order");
-      if (cancelled) return;
-      const extra = ((data ?? []) as Pick<StaffPhoto, "photo_url">[]).map(
-        (p) => p.photo_url
-      );
-      const all = mainPhotoUrl ? [mainPhotoUrl, ...extra] : extra;
-      setPhotos(all);
-      setPhotoIndex(0);
-      setLoadingPhotos(false);
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("staff_photos")
+          .select("photo_url")
+          .eq("staff_id", staffId)
+          .order("display_order");
+        if (cancelled) return;
+        const extra = ((data ?? []) as Pick<StaffPhoto, "photo_url">[]).map(
+          (p) => p.photo_url
+        );
+        const all = mainPhotoUrl ? [mainPhotoUrl, ...extra] : extra;
+        setPhotos(all);
+        setPhotoIndex(0);
+      } finally {
+        if (!cancelled) setLoadingPhotos(false);
+      }
     }
     load();
     return () => {
@@ -173,7 +176,7 @@ export function PublicStaffSection({
                     type="button"
                     onClick={() => handleSelect(isSelected ? null : member)}
                     aria-label={`View ${member.name}'s profile`}
-                    className="absolute inset-0 cursor-pointer focus-visible:outline-none"
+                    className="absolute inset-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-champagne focus-visible:ring-inset"
                   />
 
                   {/* Info overlay — pointer-events-none so clicks fall through to the button above,

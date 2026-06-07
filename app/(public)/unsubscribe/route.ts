@@ -85,8 +85,9 @@ export async function POST(request: NextRequest) {
     redirect("/unsubscribed?result=error");
   }
 
-  // Non-blocking: remove from Resend Audience. Unsubscribe still succeeds if this fails.
-  removeContact(subscriber.email).catch((err) =>
+  // Best-effort: remove from Resend Audience. Must be awaited before redirect()
+  // because redirect() throws NEXT_REDIRECT, which terminates the handler.
+  await removeContact(subscriber.email).catch((err) =>
     console.error("[resend] removeContact failed:", err)
   );
 

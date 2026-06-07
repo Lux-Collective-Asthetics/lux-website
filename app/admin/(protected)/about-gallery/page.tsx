@@ -11,7 +11,13 @@ export default async function AboutGalleryPage() {
   let photos = [];
   try {
     photos = await getAboutGalleryPhotos();
-  } catch {
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    const isMissingTable =
+      msg.includes("about_gallery") ||
+      msg.includes("42P01") ||
+      msg.toLowerCase().includes("does not exist");
+    if (!isMissingTable) throw err;
     return (
       <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6">
         <h1 className="text-lg font-semibold text-destructive">Migration required</h1>

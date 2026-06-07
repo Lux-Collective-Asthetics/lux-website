@@ -23,13 +23,32 @@ function parsePriceLine(line: string): { label: string; price: string } {
 }
 
 async function main() {
-  console.log("Clearing existing services (price lines cascade)...");
+  // Snapshot staff_services before deletion (cascade will wipe them when services are deleted).
+  // NOTE: supabase-js has no transaction API; operations below are best-effort ordered.
+  // For true atomicity add a direct-postgres connection (pg package) or a DB RPC.
+  console.log("Caching staff_services before reseed...");
+  const { data: ssRows, error: ssReadErr } = await supabase
+    .from("staff_services")
+    .select("staff_id, service_id, services(name)");
+  if (ssReadErr) throw new Error(`Failed to read staff_services: ${ssReadErr.message}`);
+
+  type CachedLink = { staff_id: string; serviceName: string };
+  const cachedLinks: CachedLink[] = (ssRows ?? []).map((row) => ({
+    staff_id: row.staff_id as string,
+    serviceName: ((row.services as unknown) as { name: string } | null)?.name ?? "",
+  }));
+  console.log(`  Cached ${cachedLinks.length} staff assignment(s).`);
+
+  console.log("Clearing existing services (price lines and staff_services cascade)...");
   const { error: delSvcErr } = await supabase.from("services").delete().neq("id", "00000000-0000-0000-0000-000000000000");
   if (delSvcErr) throw new Error(`Failed to delete services: ${delSvcErr.message}`);
 
   console.log("Clearing existing service categories...");
   const { error: delCatErr } = await supabase.from("service_categories").delete().neq("id", "00000000-0000-0000-0000-000000000000");
   if (delCatErr) throw new Error(`Failed to delete categories: ${delCatErr.message}`);
+
+  // Track name → new UUID so we can remap staff assignments after insert.
+  const nameToNewId = new Map<string, string>();
 
   console.log("Inserting services...");
   for (let gi = 0; gi < serviceGroups.length; gi++) {
@@ -49,6 +68,8 @@ async function main() {
         .single();
 
       if (svcErr) throw new Error(`Service insert failed for "${svc.name}": ${svcErr.message}`);
+
+      nameToNewId.set(svc.name, serviceRow.id);
 
       const priceLines = svc.priceLines.map((line, idx) => ({
         service_id: serviceRow.id,
@@ -70,6 +91,24 @@ async function main() {
   }));
   const { error: catErr } = await supabase.from("service_categories").insert(categories);
   if (catErr) throw new Error(`Category insert failed: ${catErr.message}`);
+
+  // Restore staff assignments using the remapped service UUIDs.
+  if (cachedLinks.length > 0) {
+    console.log("Restoring staff_services...");
+    const restoredLinks = cachedLinks
+      .filter((l) => nameToNewId.has(l.serviceName))
+      .map((l) => ({ staff_id: l.staff_id, service_id: nameToNewId.get(l.serviceName)! }));
+
+    const skipped = cachedLinks.length - restoredLinks.length;
+    if (skipped > 0) {
+      console.warn(`  ⚠ Skipped ${skipped} assignment(s) — service name no longer exists in content/site.ts.`);
+    }
+    if (restoredLinks.length > 0) {
+      const { error: ssRestoreErr } = await supabase.from("staff_services").insert(restoredLinks);
+      if (ssRestoreErr) throw new Error(`Failed to restore staff_services: ${ssRestoreErr.message}`);
+    }
+    console.log(`  ✓ Restored ${restoredLinks.length} staff assignment(s).`);
+  }
 
   console.log("Done! Services and categories reseeded successfully.");
 }

@@ -4,12 +4,12 @@
 alter table service_categories
   add column if not exists is_system boolean not null default false;
 
--- 2. Ensure the "Other" system fallback category exists
+-- 2. Ensure the "Other" system fallback category exists (upsert handles pre-existing rows)
 insert into service_categories (name, display_order, is_system)
-select 'Other', 9999, true
-where not exists (
-  select 1 from service_categories where name = 'Other' and is_system = true
-);
+values ('Other', 9999, true)
+on conflict (name) do update
+  set is_system = true,
+      display_order = 9999;
 
 -- 3. Add category_id FK to services (nullable initially so backfill can run)
 alter table services

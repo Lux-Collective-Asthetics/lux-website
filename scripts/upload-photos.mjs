@@ -33,8 +33,13 @@ function parseArgs() {
 async function main() {
   const { target, dir, staffId } = parseArgs();
 
+  const VALID_TARGETS = ["about-gallery", "staff"];
   if (!target || !dir) {
     console.error("Usage: node scripts/upload-photos.mjs --target <about-gallery|staff> --dir <path> [--staff-id <uuid>]");
+    process.exit(1);
+  }
+  if (!VALID_TARGETS.includes(target)) {
+    console.error(`Unknown --target "${target}". Must be one of: ${VALID_TARGETS.join(", ")}`);
     process.exit(1);
   }
   if (target === "staff" && !staffId) {
@@ -90,14 +95,22 @@ async function main() {
         display_order: i,
         is_visible: true,
       });
-      if (error) { console.error(`DB insert failed: ${error.message}`); continue; }
+      if (error) {
+        console.error(`DB insert failed: ${error.message} — removing uploaded file`);
+        await supabase.storage.from(BUCKET).remove([storagePath]).catch((e) => console.error("Storage rollback failed:", e));
+        continue;
+      }
     } else if (target === "staff") {
       const { error } = await supabase.from("staff_photos").insert({
         staff_id: staffId,
         photo_url: publicUrl,
         display_order: i,
       });
-      if (error) { console.error(`DB insert failed: ${error.message}`); continue; }
+      if (error) {
+        console.error(`DB insert failed: ${error.message} — removing uploaded file`);
+        await supabase.storage.from(BUCKET).remove([storagePath]).catch((e) => console.error("Storage rollback failed:", e));
+        continue;
+      }
     }
 
     console.log("OK →", publicUrl);

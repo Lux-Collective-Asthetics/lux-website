@@ -17,6 +17,11 @@ export function AboutGallery({ initialPhotos }: Props) {
 
   useEffect(() => {
     if (lightboxIndex === null) return;
+    if (lightboxIndex >= photos.length) setLightboxIndex(photos.length > 0 ? photos.length - 1 : null);
+  }, [photos.length, lightboxIndex]);
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setLightboxIndex(null);
       if (e.key === "ArrowLeft") setLightboxIndex((i) => (i === null || i === 0 ? photos.length - 1 : i - 1));
@@ -73,7 +78,7 @@ export function AboutGallery({ initialPhotos }: Props) {
         </div>
       </section>
 
-      {lightboxIndex !== null && (
+      {lightboxIndex !== null && lightboxIndex < photos.length && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
           onClick={() => setLightboxIndex(null)}
