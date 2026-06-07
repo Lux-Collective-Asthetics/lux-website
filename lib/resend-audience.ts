@@ -78,16 +78,16 @@ type BroadcastOptions = {
   scheduledAt?: string; // ISO 8601 string, e.g. "2026-06-10T14:00:00Z"
 };
 
-// Creates and sends (or schedules) a broadcast to RESEND_SEGMENT_ID.
+// Creates and sends (or schedules) a broadcast to the RESEND_AUDIENCE_ID audience.
 // Throws on failure — caller must surface error to the admin.
 // Returns the Resend broadcast ID for logging.
 export async function createAndSendBroadcast(opts: BroadcastOptions): Promise<string> {
-  const segmentId = process.env.RESEND_SEGMENT_ID;
-  if (!segmentId) throw new Error("Missing env: RESEND_SEGMENT_ID");
+  const audienceId = process.env.RESEND_AUDIENCE_ID;
+  if (!audienceId) throw new Error("Missing env: RESEND_AUDIENCE_ID");
   const resend = client();
 
   const params: Parameters<typeof resend.broadcasts.create>[0] = {
-    segmentId,
+    audienceId,
     from: "The Lux Collective <noreply@theluxcollectiveaesthetics.com>",
     subject: opts.subject,
     html: opts.html,
