@@ -119,7 +119,7 @@ export async function fetchServiceCategories() {
     .from("service_categories")
     .select("*")
     .order("display_order");
-  if (error) return [] as ServiceCategory[];
+  if (error) throw new Error(error.message);
   return (data ?? []) as ServiceCategory[];
 }
 

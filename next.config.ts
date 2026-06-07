@@ -13,6 +13,8 @@ const csp = [
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cloudflareinsights.com https://challenges.cloudflare.com",
   "frame-src https://challenges.cloudflare.com",
   "trusted-types nextjs#bundler goog#html default",
+  // Turbopack HMR and React dev tools set src/innerHTML without Trusted Types wrappers; enforce only in production
+  ...(!isDev ? ["require-trusted-types-for 'script'"] : []),
   "base-uri 'self'",
   "form-action 'self'",
 ].join("; ");

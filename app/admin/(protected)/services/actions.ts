@@ -189,16 +189,26 @@ export async function deleteServiceCategory(id: string, reassignToId?: string) {
   const supabase = createServiceClient();
 
   let targetId = reassignToId;
-  if (!targetId) {
+  let targetName: string | undefined;
+
+  if (targetId) {
+    const { data: targetCat } = await supabase
+      .from("service_categories")
+      .select("name")
+      .eq("id", targetId)
+      .maybeSingle();
+    targetName = targetCat?.name;
+  } else {
     const { data: otherCategory } = await supabase
       .from("service_categories")
-      .select("id")
+      .select("id, name")
       .eq("is_system", true)
       .maybeSingle();
     targetId = otherCategory?.id;
+    targetName = otherCategory?.name;
   }
 
-  if (!targetId) {
+  if (!targetId || !targetName) {
     throw new Error(
       "Cannot delete category: no reassignment target and no system 'Other' category found."
     );
@@ -206,7 +216,7 @@ export async function deleteServiceCategory(id: string, reassignToId?: string) {
 
   const { error: reassignError } = await supabase
     .from("services")
-    .update({ category_id: targetId })
+    .update({ category_id: targetId, category: targetName })
     .eq("category_id", id);
   if (reassignError) throw new Error(reassignError.message);
 

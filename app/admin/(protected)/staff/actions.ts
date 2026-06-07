@@ -5,6 +5,12 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/admin-auth";
 import type { StaffPhoto } from "@/lib/types/db";
 
+function storagePathFromUrl(url: string, bucket: string): string | null {
+  const marker = `/public/${bucket}/`;
+  const idx = url.indexOf(marker);
+  return idx === -1 ? null : url.slice(idx + marker.length);
+}
+
 function revalidateStaffPages() {
   revalidatePath("/admin/staff");
   revalidatePath("/about");
@@ -69,8 +75,26 @@ export async function updateStaffMember(
 export async function deleteStaffMember(id: string) {
   await requireAdmin();
   const supabase = createServiceClient();
+
+  const [{ data: member }, { data: photos }] = await Promise.all([
+    supabase.from("staff_members").select("photo_url").eq("id", id).maybeSingle(),
+    supabase.from("staff_photos").select("photo_url").eq("staff_id", id),
+  ]);
+
   const { error } = await supabase.from("staff_members").delete().eq("id", id);
   if (error) throw new Error(error.message);
+
+  const urlsToDelete = [
+    member?.photo_url,
+    ...(photos ?? []).map((p) => p.photo_url),
+  ].filter(Boolean) as string[];
+
+  const paths = urlsToDelete
+    .map((url) => storagePathFromUrl(url, "lux-staff"))
+    .filter(Boolean) as string[];
+
+  if (paths.length > 0) await supabase.storage.from("lux-staff").remove(paths);
+
   revalidateStaffPages();
 }
 
@@ -105,8 +129,21 @@ export async function addStaffPhoto(staffId: string, photoUrl: string): Promise<
 export async function deleteStaffPhoto(photoId: string) {
   await requireAdmin();
   const supabase = createServiceClient();
+
+  const { data: row } = await supabase
+    .from("staff_photos")
+    .select("photo_url")
+    .eq("id", photoId)
+    .maybeSingle();
+
   const { error } = await supabase.from("staff_photos").delete().eq("id", photoId);
   if (error) throw new Error(error.message);
+
+  if (row?.photo_url) {
+    const path = storagePathFromUrl(row.photo_url, "lux-staff");
+    if (path) await supabase.storage.from("lux-staff").remove([path]);
+  }
+
   revalidatePath("/about");
 }
 

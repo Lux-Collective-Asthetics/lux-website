@@ -51,11 +51,30 @@ export async function updateAboutGalleryPhoto(id: string, caption: string) {
   revalidate();
 }
 
+function storagePathFromUrl(url: string, bucket: string): string | null {
+  const marker = `/public/${bucket}/`;
+  const idx = url.indexOf(marker);
+  return idx === -1 ? null : url.slice(idx + marker.length);
+}
+
 export async function deleteAboutGalleryPhoto(id: string) {
   await requireAdmin();
   const supabase = createServiceClient();
+
+  const { data: row } = await supabase
+    .from("about_gallery")
+    .select("photo_url")
+    .eq("id", id)
+    .maybeSingle();
+
   const { error } = await supabase.from("about_gallery").delete().eq("id", id);
   if (error) throw new Error(error.message);
+
+  if (row?.photo_url) {
+    const path = storagePathFromUrl(row.photo_url, "lux-staff");
+    if (path) await supabase.storage.from("lux-staff").remove([path]);
+  }
+
   revalidate();
 }
 

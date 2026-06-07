@@ -34,7 +34,7 @@ export function CategoryManager({ categories, saving, onAdd, onRequestDelete, on
     setNewCategoryName("");
   }
 
-  async function handleUpdateImage(id: string, url: string) {
+  async function handleUpdateImage(id: string, url: string | null) {
     await onUpdateImage(id, url);
     setEditingImageId(null);
   }
