@@ -5,8 +5,6 @@ import type { GalleryImage, ServiceCategory } from "@/lib/types/db";
 
 export const dynamic = "force-dynamic";
 
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   title: "Gallery",
   description:
