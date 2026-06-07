@@ -26,11 +26,19 @@ export async function addContact(email: string): Promise<void> {
 // Non-blocking: caller should .catch() errors.
 export async function removeContact(email: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return;
-  await fetch(`https://api.resend.com/contacts/${encodeURIComponent(email)}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${apiKey}` },
-  });
+  const audienceId = process.env.RESEND_AUDIENCE_ID;
+  if (!apiKey || !audienceId) return;
+  const response = await fetch(
+    `https://api.resend.com/audiences/${audienceId}/contacts/${encodeURIComponent(email)}`,
+    {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${apiKey}` },
+    }
+  );
+  if (!response.ok) {
+    const text = await response.text().catch(() => response.statusText);
+    throw new Error(`[resend] removeContact: ${response.status} ${text}`);
+  }
 }
 
 // Sends a welcome email to a new subscriber.
