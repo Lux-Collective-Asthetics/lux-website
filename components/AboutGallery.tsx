@@ -15,13 +15,16 @@ export function AboutGallery({ initialPhotos }: Props) {
   const { data: photos } = useAboutGallery(initialPhotos);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (lightboxIndex === null) return;
-    if (lightboxIndex >= photos.length) setLightboxIndex(photos.length > 0 ? photos.length - 1 : null);
-  }, [photos.length, lightboxIndex]);
+  // Clamp to valid range during render — avoids setState inside an effect
+  const safeIndex: number | null =
+    lightboxIndex === null || photos.length === 0
+      ? null
+      : lightboxIndex >= photos.length
+        ? photos.length - 1
+        : lightboxIndex;
 
   useEffect(() => {
-    if (lightboxIndex === null) return;
+    if (safeIndex === null) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setLightboxIndex(null);
       if (e.key === "ArrowLeft") setLightboxIndex((i) => (i === null || i === 0 ? photos.length - 1 : i - 1));
@@ -33,7 +36,7 @@ export function AboutGallery({ initialPhotos }: Props) {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [lightboxIndex, photos.length]);
+  }, [safeIndex, photos.length]);
 
   if (photos.length === 0) return null;
 
@@ -78,7 +81,7 @@ export function AboutGallery({ initialPhotos }: Props) {
         </div>
       </section>
 
-      {lightboxIndex !== null && lightboxIndex < photos.length && (
+      {safeIndex !== null && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
           onClick={() => setLightboxIndex(null)}
@@ -91,8 +94,8 @@ export function AboutGallery({ initialPhotos }: Props) {
             onClick={(e) => e.stopPropagation()}
           >
             <Image
-              src={photos[lightboxIndex].photo_url}
-              alt={photos[lightboxIndex].caption ?? `Photo ${lightboxIndex + 1}`}
+              src={photos[safeIndex].photo_url}
+              alt={photos[safeIndex].caption ?? `Photo ${safeIndex + 1}`}
               fill
               sizes="100vw"
               className="object-contain"
@@ -124,7 +127,7 @@ export function AboutGallery({ initialPhotos }: Props) {
               <X className="size-4" />
             </button>
             <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm text-white/60">
-              {lightboxIndex + 1} / {photos.length}
+              {safeIndex + 1} / {photos.length}
             </p>
           </div>
         </div>
