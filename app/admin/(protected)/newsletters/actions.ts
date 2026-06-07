@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/admin-auth";
 import { createAndSendBroadcast } from "@/lib/resend-audience";
+import { business } from "@/content/site";
 
 export async function createNewsletterSend(data: {
   campaign_name: string;
@@ -47,7 +48,7 @@ function wrapEmailHtml(bodyHtml: string, subject: string): string {
     ${bodyHtml}
   </div>
   <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 0.75rem; color: #888; line-height: 1.5;">
-    <p style="margin: 0;">The Lux Collective Aesthetics<br />[SALON STREET ADDRESS]<br />[CITY, STATE ZIP]</p>
+    <p style="margin: 0;">${business.name}<br />${business.address.street}<br />${business.address.city}, ${business.address.state} ${business.address.zip}</p>
     <p style="margin: 8px 0 0;">
       <a href="{{{RESEND_UNSUBSCRIBE_URL}}}" style="color: #888; text-decoration: underline;">Unsubscribe</a>
     </p>
