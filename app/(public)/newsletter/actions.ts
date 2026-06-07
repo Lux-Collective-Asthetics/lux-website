@@ -5,9 +5,10 @@ import { headers } from "next/headers";
 import { createServiceClient } from "@/lib/supabase/service";
 import { newsletterRateLimit } from "@/lib/redis";
 import { verifyTurnstile } from "@/lib/turnstile";
+import { addContact, sendWelcomeEmail } from "@/lib/resend-audience";
 
 export type SubscribeState = {
-  status: "idle" | "success" | "error";
+  status: "idle" | "success" | "error" | "already_subscribed";
   message: string;
   errors?: { email?: string[] };
 };
@@ -82,7 +83,10 @@ export async function subscribe(
   }
 
   if (existing?.status === "active") {
-    return { status: "success", message: "You're on the list. We'll be in touch." };
+    return {
+      status: "already_subscribed",
+      message: "This email is already subscribed. No changes were made.",
+    };
   }
 
   const now = new Date().toISOString();
@@ -97,6 +101,23 @@ export async function subscribe(
 
   if (upsertError) {
     return { status: "error", message: "Something went wrong. Please try again." };
+  }
+
+  // Fetch the subscriber's token for the welcome email unsubscribe link.
+  const { data: saved } = await supabase
+    .from("subscribers")
+    .select("token")
+    .eq("email", email)
+    .single();
+
+  // Non-blocking: sync to Resend Audience. Signup still succeeds if this fails.
+  addContact(email).catch((err) => console.error("[resend] addContact failed:", err));
+
+  // Non-blocking: send welcome email to new subscribers only.
+  if (!isResubscription && saved?.token) {
+    sendWelcomeEmail(email, saved.token).catch((err) =>
+      console.error("[resend] welcome email failed:", err)
+    );
   }
 
   return {

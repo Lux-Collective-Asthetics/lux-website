@@ -1,5 +1,5 @@
 import type { Service, ServiceGroup, Testimonial } from "@/content/site";
-import type { GalleryImage, StaffMember } from "@/lib/types/db";
+import type { AboutGalleryPhoto, GalleryImage, ServiceCategory, StaffMemberWithServices } from "@/lib/types/db";
 import { createClient } from "@/lib/supabase/client";
 
 type DbServicePriceLine = {
@@ -20,6 +20,7 @@ type DbService = {
 type DbTestimonial = {
   quote: string;
   author: string;
+  photo_url?: string | null;
 };
 
 export const publicContentQueryKeys = {
@@ -27,6 +28,8 @@ export const publicContentQueryKeys = {
   services: ["public-content", "services"] as const,
   staff: ["public-content", "staff"] as const,
   gallery: ["public-content", "gallery"] as const,
+  aboutGallery: ["public-content", "about-gallery"] as const,
+  serviceCategories: ["public-content", "service-categories"] as const,
 };
 
 export function mapDbServicesToServiceGroups(dbServices: DbService[]) {
@@ -58,7 +61,7 @@ export async function fetchVisibleTestimonials() {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("testimonials")
-    .select("quote, author")
+    .select("quote, author, photo_url")
     .eq("is_visible", true)
     .order("display_order");
 
@@ -67,6 +70,7 @@ export async function fetchVisibleTestimonials() {
   return ((data ?? []) as DbTestimonial[]).map((testimonial) => ({
     quote: testimonial.quote,
     author: testimonial.author,
+    photo_url: testimonial.photo_url,
   })) satisfies Testimonial[];
 }
 
@@ -87,13 +91,13 @@ export async function fetchVisibleStaff() {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("staff_members")
-    .select("*")
+    .select("*, staff_services(service_id, services(id, name))")
     .eq("is_visible", true)
     .order("display_order");
 
   if (error) throw new Error(error.message);
 
-  return (data ?? []) as StaffMember[];
+  return (data ?? []) as StaffMemberWithServices[];
 }
 
 export async function fetchVisibleGalleryImages() {
@@ -107,4 +111,27 @@ export async function fetchVisibleGalleryImages() {
   if (error) throw new Error(error.message);
 
   return (data ?? []) as GalleryImage[];
+}
+
+export async function fetchServiceCategories() {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("service_categories")
+    .select("*")
+    .order("display_order");
+  if (error) throw new Error(error.message);
+  return (data ?? []) as ServiceCategory[];
+}
+
+export async function fetchVisibleAboutGallery() {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("about_gallery")
+    .select("*")
+    .eq("is_visible", true)
+    .order("display_order");
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []) as AboutGalleryPhoto[];
 }

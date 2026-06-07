@@ -67,10 +67,15 @@ export async function updateTestimonialOrder(
 ) {
   await requireAdmin();
   const supabase = createServiceClient();
-  await Promise.all(
+  const results = await Promise.all(
     items.map(({ id, display_order }) =>
-      supabase.from("testimonials").update({ display_order }).eq("id", id)
+      supabase.from("testimonials").update({ display_order }).eq("id", id).then((res) => ({ id, error: res.error }))
     )
   );
+  const failures = results.filter((r) => r.error);
+  if (failures.length > 0) {
+    const msg = failures.map((f) => `${f.id}: ${f.error!.message}`).join("; ");
+    throw new Error(`Failed to update order for: ${msg}`);
+  }
   revalidateTestimonialPages();
 }

@@ -10,10 +10,10 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self'",
   "img-src 'self' data: blob: https://ukmyjostwftmvyrciqrm.supabase.co",
-  "connect-src 'self' https://*.supabase.co https://cloudflareinsights.com https://challenges.cloudflare.com",
+  "connect-src 'self' https://ukmyjostwftmvyrciqrm.supabase.co wss://ukmyjostwftmvyrciqrm.supabase.co https://cloudflareinsights.com https://challenges.cloudflare.com",
   "frame-src https://challenges.cloudflare.com",
   "trusted-types nextjs#bundler goog#html default",
-  // Turbopack HMR sets .src/.innerHTML without TrustedScriptURL — enforce only in prod
+  // Turbopack HMR and React dev tools set src/innerHTML without Trusted Types wrappers; enforce only in production
   ...(!isDev ? ["require-trusted-types-for 'script'"] : []),
   "base-uri 'self'",
   "form-action 'self'",

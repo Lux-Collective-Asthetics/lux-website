@@ -5,9 +5,7 @@ import Link from "next/link";
 import { motion, type Variants } from "motion/react";
 import { ArrowRight, Clock, Mail, MapPin, Sparkles } from "lucide-react";
 
-import { BookButton } from "@/components/book-button";
 import { business } from "@/content/site";
-
 
 const container: Variants = {
   hidden: { opacity: 0, y: 24 },
@@ -32,9 +30,9 @@ const statsBlock: Variants = {
   },
 };
 
-export function LuxHero({ bookingUrl }: { bookingUrl: string | null }) {
+export function LuxHero() {
   return (
-    <section className="relative flex min-h-[540px] items-end overflow-hidden bg-[linear-gradient(145deg,var(--cream),var(--blush))]">
+    <section className="relative flex min-h-135 items-end overflow-hidden bg-[linear-gradient(145deg,var(--cream),var(--blush))]">
       {/* Decorative blobs */}
       <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-16 size-80 rounded-full bg-blush opacity-50" />
       <div aria-hidden="true" className="pointer-events-none absolute -left-8 bottom-0 size-56 rounded-full bg-taupe opacity-35" />
@@ -71,29 +69,21 @@ export function LuxHero({ bookingUrl }: { bookingUrl: string | null }) {
               {business.description}
             </motion.p>
 
-            <motion.div
-              variants={item}
-              className="mt-8 flex flex-col gap-3 sm:flex-row"
-            >
-              <BookButton bookingUrl={bookingUrl} source="home_hero" className="rounded-full" />
+            <motion.div variants={item} className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/services"
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-border px-5 text-sm font-medium transition-colors hover:bg-muted"
+                className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 View services
-                <ArrowRight className="size-4" />
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex h-9 items-center justify-center rounded-full border border-border px-5 text-sm font-medium transition-colors hover:bg-muted"
+              >
+                Contact us
               </Link>
             </motion.div>
-
-            {!bookingUrl && (
-              <motion.p variants={item} className="mt-4 text-sm text-muted-foreground">
-                Online booking coming soon —{" "}
-                <a href={`tel:${business.phone.replace(/[^\d]/g, "")}`} className="underline underline-offset-2">
-                  call us at {business.phone}
-                </a>{" "}
-                to schedule.
-              </motion.p>
-            )}
           </div>{/* end left content */}
 
           {/* Right: hero photo */}

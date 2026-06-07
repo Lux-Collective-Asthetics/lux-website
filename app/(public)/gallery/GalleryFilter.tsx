@@ -3,12 +3,25 @@
 import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import type { GalleryImage } from "@/lib/types/db";
-import { usePublicGalleryImages } from "@/lib/public-content-hooks";
+import type { GalleryImage, ServiceCategory } from "@/lib/types/db";
+import { usePublicGalleryImages, usePublicServiceCategories } from "@/lib/public-content-hooks";
 
-export function GalleryFilter({ images: initialImages }: { images: GalleryImage[] }) {
+type Props = {
+  images: GalleryImage[];
+  serviceCategories: ServiceCategory[];
+};
+
+export function GalleryFilter({ images: initialImages, serviceCategories: initialCategories }: Props) {
   const { data: images } = usePublicGalleryImages(initialImages);
-  const categories = ["All", ...Array.from(new Set(images.map((i) => i.category)))];
+  const { data: serviceCategories } = usePublicServiceCategories(initialCategories);
+
+  // Use managed service category names as filters; fall back to extracting from images
+  const categoryNames =
+    serviceCategories.length > 0
+      ? serviceCategories.map((c) => c.name)
+      : Array.from(new Set(images.map((i) => i.category)));
+
+  const categories = ["All", ...categoryNames];
   const [active, setActive] = useState("All");
 
   const filtered = active === "All" ? images : images.filter((i) => i.category === active);
@@ -46,7 +59,7 @@ export function GalleryFilter({ images: initialImages }: { images: GalleryImage[
               {image.category}
             </div>
 
-            <div className="relative flex h-full w-full transition-transform duration-300 group-hover:scale-[1.02]">
+            <div className="absolute inset-0 flex transition-transform duration-300 group-hover:scale-[1.02]">
               <div className="relative h-full w-1/2 overflow-hidden">
                 <Image
                   src={image.before_url}

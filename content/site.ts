@@ -13,6 +13,7 @@ export type ServiceGroup = {
 export type Testimonial = {
   quote: string;
   author: string;
+  photo_url?: string | null;
 };
 
 export const business = {
@@ -42,62 +43,37 @@ export const serviceGroups: ServiceGroup[] = [
     name: "Injectables",
     services: [
       {
-        name: "Botox",
+        name: "Toxin",
         summary:
-          "Wrinkle relaxer appointments using Botox, Dysport, Xeomin, or Jeuveau.",
+          "Wrinkle relaxers using Botox, Dysport, Xeomin, or Jeuveau — priced per unit.",
         priceLines: ["$10 per unit"],
       },
       {
         name: "Dermal Filler",
         summary: "Volume and contour support with a personalized treatment plan.",
-        priceLines: ["$550 per syringe", "$275 per half syringe"],
+        priceLines: ["$600 per syringe", "$300 per half syringe"],
       },
     ],
   },
   {
-    name: "Laser Treatments",
-    services: [
-      {
-        name: "Laser Photo Facial",
-        summary: "A light-based treatment for tone, clarity, and refreshed skin.",
-        priceLines: ["1 session: $150", "2 sessions: $200"],
-      },
-      {
-        name: "Laser Hair Removal",
-        summary: "Targeted hair reduction by treatment area.",
-        priceLines: [
-          "Small area: face, under arms, beard - $75",
-          "Medium area: arms, bikini, lower legs - $150",
-          "Large area: back, full, chest - $250",
-        ],
-      },
-      {
-        name: "Laser Leg Vein Treatment",
-        summary: "Laser treatment priced by the number of visible veins treated.",
-        priceLines: [
-          "1-10 veins: $100",
-          "11-20 veins: $200",
-          "21-30 veins: $300",
-          "31+ veins: $400",
-        ],
-        duration: "20-60 min",
-      },
-    ],
-  },
-  {
-    name: "Regenerative Treatments",
+    name: "PRP",
     services: [
       {
         name: "Vampire Facial",
         summary:
-          "PRP facial treatment supporting collagen, texture, tone, and skin renewal.",
-        priceLines: ["$250", "Add-on laser: $100"],
+          "PRP microneedling facial supporting collagen, texture, tone, and skin renewal.",
+        priceLines: ["$250"],
         duration: "60 min",
       },
       {
-        name: "Facial Injections",
+        name: "After Laser Tx PRP",
+        summary: "PRP add-on applied after a laser treatment for enhanced recovery and results.",
+        priceLines: ["Additional $100"],
+      },
+      {
+        name: "PRP Injections for Face",
         summary: "PRP-based facial injection options customized to your goals.",
-        priceLines: ["$150-$450"],
+        priceLines: ["$150–$450"],
         duration: "60 min",
       },
       {
@@ -106,10 +82,176 @@ export const serviceGroups: ServiceGroup[] = [
         priceLines: ["1 tube: $200", "2 tubes: $300"],
       },
       {
-        name: "P-Shot / O-Shot",
-        summary: "Consultation-led regenerative wellness treatments.",
-        priceLines: ["P-Shot: $600", "O-Shot: $500"],
+        name: "P-Shot",
+        summary: "Consultation-led PRP regenerative treatment for men.",
+        priceLines: ["$500 per session"],
         duration: "60 min",
+      },
+      {
+        name: "O-Shot",
+        summary: "Consultation-led PRP regenerative treatment for women.",
+        priceLines: ["$500 per session"],
+        duration: "60 min",
+      },
+    ],
+  },
+  {
+    name: "HRT",
+    services: [
+      {
+        name: "Oral / Injectable HRT",
+        summary: "Hormone replacement therapy reviewed by a provider; oral or injectable options with cost determined by type and coverage.",
+        priceLines: ["Office visit: $75", "Oral/injectables: cost varies"],
+        duration: "45 min",
+      },
+      {
+        name: "Women's Pellet Therapy",
+        summary: "Bioidentical hormone pellet therapy for women, inserted by a provider.",
+        priceLines: ["$350 per session"],
+      },
+      {
+        name: "Men's Pellet Therapy",
+        summary: "Bioidentical hormone pellet therapy for men, inserted by a provider.",
+        priceLines: ["$600 per session"],
+      },
+    ],
+  },
+  {
+    name: "Laser Treatments",
+    services: [
+      {
+        name: "Laser Hair Removal",
+        summary: "Targeted hair reduction priced by treatment area.",
+        priceLines: [
+          "Small area (armpits, bikini line, face): $100 per session",
+          "Medium area (Brazilian, lower legs, arms): $200 per session",
+          "Large area (back, chest, full legs): $400 per session",
+        ],
+      },
+      {
+        name: "Photofacial",
+        summary: "Light-based treatment for resurfacing, vascular concerns, and melasma.",
+        priceLines: ["$200 per session", "2 sessions: $300"],
+      },
+    ],
+  },
+  {
+    name: "Massage",
+    services: [
+      {
+        name: "Deep Tissue / Hot Stone Massage",
+        summary: "Therapeutic massage using deep tissue or hot stone techniques.",
+        priceLines: [
+          "30 min: $45",
+          "45 min: $60",
+          "60 min: $75",
+          "75 min: $90",
+        ],
+      },
+      {
+        name: "Relaxation Massage",
+        summary: "Calming full-body massage focused on stress relief and comfort.",
+        priceLines: [
+          "30 min: $35",
+          "45 min: $50",
+          "60 min: $65",
+          "75 min: $80",
+        ],
+      },
+      {
+        name: "Exfoliation Massage Add-On",
+        summary: "Skin-smoothing exfoliation added to any massage service.",
+        priceLines: ["$10 add-on"],
+      },
+    ],
+  },
+  {
+    name: "Facials",
+    services: [
+      {
+        name: "Starter Facial",
+        summary: "An introductory facial tailored to your skin's needs.",
+        priceLines: ["$50"],
+      },
+      {
+        name: "HydraBoost Facial",
+        summary: "Deep hydration facial for plump, glowing skin.",
+        priceLines: ["$65"],
+      },
+      {
+        name: "The Purify",
+        summary: "Clarifying facial targeting congestion and breakouts.",
+        priceLines: ["$70"],
+      },
+      {
+        name: "Age Rewind Radiance",
+        summary: "Anti-aging facial for tone, firmness, and radiance.",
+        priceLines: ["$75"],
+      },
+      {
+        name: "DermaPlane",
+        summary: "Gentle exfoliation treatment removing dead skin and vellus hair.",
+        priceLines: ["$75"],
+      },
+      {
+        name: "MicrodermAbrasion",
+        summary: "Crystal or diamond-tip resurfacing for smoother, brighter skin.",
+        priceLines: ["$85"],
+      },
+      {
+        name: "Microneedling",
+        summary: "Collagen-stimulating treatment for texture, scarring, and skin renewal.",
+        priceLines: ["$100"],
+      },
+    ],
+  },
+  {
+    name: "Eye Enhancements",
+    services: [
+      {
+        name: "Lash Lift",
+        summary: "Semi-permanent curl treatment that opens and lifts natural lashes.",
+        priceLines: ["$55"],
+      },
+      {
+        name: "Lash Tint",
+        summary: "Color treatment to darken and define natural lashes.",
+        priceLines: ["$30"],
+      },
+      {
+        name: "Lash Tint / Lift Combo",
+        summary: "Combined lift and tint for lifted, defined lashes.",
+        priceLines: ["$75"],
+      },
+      {
+        name: "Brow Lamination",
+        summary: "Smoothing and setting treatment for fuller, more defined brows.",
+        priceLines: ["$55"],
+      },
+      {
+        name: "Brow Tint",
+        summary: "Color treatment to fill and define brow shape.",
+        priceLines: ["$20"],
+      },
+      {
+        name: "Full Brow with Wax",
+        summary: "Brow tint, lamination, and wax shaping in one service.",
+        priceLines: ["$75"],
+      },
+    ],
+  },
+  {
+    name: "Waxing",
+    services: [
+      {
+        name: "Back Facial",
+        summary: "Deep-cleansing facial treatment for the back, including extractions and masking.",
+        priceLines: ["$95"],
+      },
+      {
+        name: "Facial Wax",
+        summary: "Brow, lip, and nose waxing for clean, defined lines.",
+        priceLines: ["$15"],
       },
     ],
   },
@@ -124,16 +266,6 @@ export const serviceGroups: ServiceGroup[] = [
           "Semaglutide: $175 (5 mg) or $350 (12.5 mg)",
           "Tirzepatide: $250 (20 mg) or $350 (30 mg)",
         ],
-      },
-      {
-        name: "Hormone Replacement Therapy",
-        summary: "Office visit and therapy options reviewed with a provider.",
-        priceLines: [
-          "Office visit: $75",
-          "Pellet therapy: $350",
-          "Oral/injectables: cost varies by insurance or cash pay",
-        ],
-        duration: "45 min",
       },
       {
         name: "Cyst I&D and Skin Lesion Removal",
@@ -208,6 +340,6 @@ export const testimonials: Testimonial[] = [
 
 export const brandPrinciples = [
   "Consultation-led care — every service starts with a provider conversation, not a package upsell.",
-  "Real results, real imagery — we use actual client photos; no stock photography or AI-generated visuals.",
+  "Real results, real imagery — we use actual client photos, not stock photography.",
   "Your privacy matters — we never collect medical history or health information through this website.",
 ];

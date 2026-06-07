@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { createServiceClient } from "@/lib/supabase/service";
+import { removeContact } from "@/lib/resend-audience";
 
 function escapeHtml(str: string): string {
   return str.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
 
   const { data: subscriber, error: selectError } = await supabase
     .from("subscribers")
-    .select("id, status")
+    .select("id, status, email")
     .eq("token", token)
     .maybeSingle();
 
@@ -72,6 +73,9 @@ export async function POST(request: NextRequest) {
   }
 
   if (subscriber.status === "unsubscribed") {
+    await removeContact(subscriber.email).catch((err) =>
+      console.error("[resend] removeContact failed:", err)
+    );
     redirect("/unsubscribed?result=already");
   }
 
@@ -83,6 +87,12 @@ export async function POST(request: NextRequest) {
   if (updateError) {
     redirect("/unsubscribed?result=error");
   }
+
+  // Best-effort: remove from Resend Audience. Must be awaited before redirect()
+  // because redirect() throws NEXT_REDIRECT, which terminates the handler.
+  await removeContact(subscriber.email).catch((err) =>
+    console.error("[resend] removeContact failed:", err)
+  );
 
   redirect("/unsubscribed?result=success");
 }

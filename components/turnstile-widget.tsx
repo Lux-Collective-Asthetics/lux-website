@@ -76,6 +76,7 @@ export function TurnstileWidget({ siteKey }: { siteKey: string }) {
         timeoutId = setTimeout(renderWidget, 100);
       } else {
         setLoadState("unavailable");
+        setMessage("Security check unavailable — please refresh and try again.");
       }
     };
 

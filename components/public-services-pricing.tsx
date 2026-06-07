@@ -5,11 +5,11 @@ import type { ServiceGroup } from "@/content/site";
 import { usePublicServiceGroups } from "@/lib/public-content-hooks";
 
 export function PublicServicesPricing({
-  bookingUrl,
   initialServiceGroups,
+  initialActiveCategory,
 }: {
-  bookingUrl: string | null;
   initialServiceGroups: ServiceGroup[];
+  initialActiveCategory?: string;
 }) {
   const { data: serviceGroups } = usePublicServiceGroups(initialServiceGroups);
 
@@ -21,5 +21,5 @@ export function PublicServicesPricing({
     );
   }
 
-  return <ServicesPricingSection bookingUrl={bookingUrl} serviceGroups={serviceGroups} />;
+  return <ServicesPricingSection serviceGroups={serviceGroups} initialActiveCategory={initialActiveCategory} />;
 }

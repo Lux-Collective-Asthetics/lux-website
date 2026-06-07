@@ -20,6 +20,24 @@ export type StaffMember = {
   booking_url: string | null;
   display_order: number;
   is_visible: boolean;
+  is_owner: boolean;
+  created_at: string;
+};
+
+export type StaffPhoto = {
+  id: string;
+  staff_id: string;
+  photo_url: string;
+  display_order: number;
+  created_at: string;
+};
+
+export type AboutGalleryPhoto = {
+  id: string;
+  photo_url: string;
+  caption: string | null;
+  display_order: number;
+  is_visible: boolean;
   created_at: string;
 };
 
@@ -32,11 +50,21 @@ export type StaffMemberWithServices = StaffMember & {
   staff_services: { service_id: string; services: { id: string; name: string } }[];
 };
 
+export type ServiceCategory = {
+  id: string;
+  name: string;
+  image_url: string | null;
+  display_order: number;
+  is_system: boolean;
+  created_at: string;
+};
+
 export type DbService = {
   id: string;
   name: string;
   summary: string;
   category: string;
+  category_id: string | null;
   duration: string | null;
   hero_image_url: string | null;
   display_order: number;

@@ -1,33 +1,90 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X, Mail, MousePointerClick, Users } from "lucide-react";
+import { X, Mail, MousePointerClick, Users, Send } from "lucide-react";
+import { useEditor, EditorContent } from "@tiptap/react";
+import type { Editor } from "@tiptap/core";
+import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
 import { cn } from "@/lib/utils";
 import type { NewsletterSend } from "@/lib/types/db";
 
 type Props = {
   initialSends: NewsletterSend[];
-  onCreate: (data: {
-    campaign_name: string;
+  onSend: (data: {
     subject: string;
-    resend_broadcast_id: string;
-    sent_at: string;
-    recipient_count: number;
+    bodyHtml: string;
+    scheduledAt?: string;
   }) => Promise<void>;
 };
 
-export function NewslettersClient({ initialSends, onCreate }: Props) {
-  const [sends, setSends] = useState(initialSends);
-  const [showForm, setShowForm] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+function TiptapToolbar({ editor }: { editor: Editor | null }) {
+  if (!editor) return null;
 
-  // Form state
-  const [name, setName] = useState("");
-  const [subject, setSubject] = useState("");
-  const [broadcastId, setBroadcastId] = useState("");
-  const [sentAt, setSentAt] = useState("");
-  const [recipients, setRecipients] = useState("");
+  function setLink() {
+    const prev = editor!.getAttributes("link").href as string | undefined;
+    const url = window.prompt("Enter URL", prev ?? "https://");
+    if (url === null) return;
+    if (url === "") {
+      editor!.chain().focus().unsetLink().run();
+      return;
+    }
+    editor!.chain().focus().setLink({ href: url }).run();
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1 border-b border-border p-2">
+      <button
+        type="button"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        className={cn("rounded px-2 py-1 text-sm font-bold", editor.isActive("bold") ? "bg-admin-gold text-white" : "hover:bg-muted")}
+      >B</button>
+      <button
+        type="button"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        className={cn("rounded px-2 py-1 text-sm italic", editor.isActive("italic") ? "bg-admin-gold text-white" : "hover:bg-muted")}
+      >I</button>
+      <button
+        type="button"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={setLink}
+        className={cn("rounded px-2 py-1 text-sm", editor.isActive("link") ? "bg-admin-gold text-white" : "hover:bg-muted")}
+      >Link</button>
+      <button
+        type="button"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        className={cn("rounded px-2 py-1 text-sm", editor.isActive("bulletList") ? "bg-admin-gold text-white" : "hover:bg-muted")}
+      >• List</button>
+    </div>
+  );
+}
+
+export function NewslettersClient({ initialSends, onSend }: Props) {
+  const [sends, setSends] = useState(initialSends);
+
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [sendSubject, setSendSubject] = useState("");
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [sendSuccess, setSendSuccess] = useState(false);
+
+  const editor = useEditor({
+    immediatelyRender: false,
+    extensions: [
+      StarterKit,
+      Link.configure({ openOnClick: false, HTMLAttributes: { rel: "noopener noreferrer" } }),
+    ],
+    content: "",
+    editorProps: {
+      attributes: {
+        class: "min-h-[200px] p-3 text-sm focus:outline-none prose prose-sm max-w-none",
+      },
+    },
+  });
 
   function openRate(s: NewsletterSend) {
     if (!s.recipient_count) return "—";
@@ -48,45 +105,54 @@ export function NewslettersClient({ initialSends, onCreate }: Props) {
     });
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSend(e: React.FormEvent) {
     e.preventDefault();
-    if (!name || !subject || !broadcastId) return;
-    setSubmitting(true);
-    setError(null);
+    const bodyHtml = editor?.getHTML() ?? "";
+    const bodyText = editor?.getText().trim() ?? "";
+    if (!sendSubject.trim()) {
+      setSendError("Please enter a subject line.");
+      return;
+    }
+    if (!bodyText) {
+      setSendError("Please enter a message body.");
+      return;
+    }
+    setSending(true);
+    setSendError(null);
     try {
-      const recipientCount = parseInt(recipients, 10) || 0;
-      await onCreate({
-        campaign_name: name,
-        subject,
-        resend_broadcast_id: broadcastId,
-        sent_at: sentAt,
-        recipient_count: recipientCount,
-      });
+      const isoScheduled = scheduledAt
+        ? new Date(scheduledAt).toISOString()
+        : undefined;
+      await onSend({ subject: sendSubject, bodyHtml, scheduledAt: isoScheduled });
+      setSendSuccess(true);
       setSends((prev) => [
         {
           id: crypto.randomUUID(),
-          campaign_name: name,
-          subject,
-          resend_broadcast_id: broadcastId,
-          sent_at: sentAt || null,
-          recipient_count: recipientCount,
+          campaign_name: sendSubject,
+          subject: sendSubject,
+          resend_broadcast_id: "pending",
+          sent_at: isoScheduled ?? new Date().toISOString(),
+          recipient_count: 0,
           open_count: 0,
           click_count: 0,
           created_at: new Date().toISOString(),
         },
         ...prev,
       ]);
-      setShowForm(false);
-      setName("");
-      setSubject("");
-      setBroadcastId("");
-      setSentAt("");
-      setRecipients("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save");
+      setSendError(err instanceof Error ? err.message : "Failed to send");
     } finally {
-      setSubmitting(false);
+      setSending(false);
     }
+  }
+
+  function closeSendModal() {
+    setShowSendModal(false);
+    setSendSubject("");
+    setScheduledAt("");
+    setSendError(null);
+    setSendSuccess(false);
+    editor?.commands.clearContent();
   }
 
   return (
@@ -95,24 +161,24 @@ export function NewslettersClient({ initialSends, onCreate }: Props) {
         <div>
           <h1 className="text-2xl font-semibold text-primary">Newsletters</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Track campaign performance. Open/click counts update automatically via Resend webhook.
+            Compose and send newsletters. Open/click counts update automatically via Resend webhook.
           </p>
         </div>
         <button
           type="button"
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a]"
+          onClick={() => setShowSendModal(true)}
+          className="flex items-center gap-2 rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark"
         >
-          <Plus className="size-4" /> Add Campaign
+          <Send className="size-4" /> Send Newsletter
         </button>
       </div>
 
       {sends.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16 text-center">
           <Mail className="mx-auto mb-3 size-8 text-muted-foreground" />
-          <p className="text-muted-foreground">No campaigns tracked yet.</p>
+          <p className="text-muted-foreground">No campaigns sent yet.</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add a campaign row to start tracking open and click rates.
+            Hit &quot;Send Newsletter&quot; to compose your first email.
           </p>
         </div>
       ) : (
@@ -120,23 +186,16 @@ export function NewslettersClient({ initialSends, onCreate }: Props) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Campaign
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Sent
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Campaign</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sent</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Users className="mr-1 inline size-3" />Recipients
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  <Users className="mr-1 inline size-3" />
-                  Recipients
+                  <Mail className="mr-1 inline size-3" />Open Rate
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  <Mail className="mr-1 inline size-3" />
-                  Open Rate
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  <MousePointerClick className="mr-1 inline size-3" />
-                  Click Rate
+                  <MousePointerClick className="mr-1 inline size-3" />Click Rate
                 </th>
               </tr>
             </thead>
@@ -148,27 +207,15 @@ export function NewslettersClient({ initialSends, onCreate }: Props) {
                     <p className="max-w-xs truncate text-xs text-muted-foreground">{s.subject}</p>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(s.sent_at)}</td>
-                  <td className="px-4 py-3 text-right font-medium">
-                    {s.recipient_count.toLocaleString()}
-                  </td>
+                  <td className="px-4 py-3 text-right font-medium">{s.recipient_count.toLocaleString()}</td>
                   <td className="px-4 py-3 text-right">
-                    <span
-                      className={cn(
-                        "font-medium",
-                        s.open_count > 0 ? "text-green-600" : "text-muted-foreground"
-                      )}
-                    >
+                    <span className={cn("font-medium", s.open_count > 0 ? "text-green-600" : "text-muted-foreground")}>
                       {openRate(s)}
                     </span>
                     <span className="ml-1 text-xs text-muted-foreground">({s.open_count})</span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span
-                      className={cn(
-                        "font-medium",
-                        s.click_count > 0 ? "text-blue-600" : "text-muted-foreground"
-                      )}
-                    >
+                    <span className={cn("font-medium", s.click_count > 0 ? "text-blue-600" : "text-muted-foreground")}>
                       {clickRate(s)}
                     </span>
                     <span className="ml-1 text-xs text-muted-foreground">({s.click_count})</span>
@@ -180,93 +227,86 @@ export function NewslettersClient({ initialSends, onCreate }: Props) {
         </div>
       )}
 
-      {/* Add campaign modal */}
-      {showForm && (
+      {/* Send Newsletter modal */}
+      {showSendModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onMouseDown={() => setShowForm(false)}
+          onMouseDown={closeSendModal}
         >
           <div
-            className="w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-2xl"
+            className="w-full max-w-2xl rounded-xl border border-border bg-background p-6 shadow-2xl"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Add Campaign</h2>
-              <button type="button" onClick={() => setShowForm(false)}>
+              <h2 className="text-lg font-semibold">Send Newsletter</h2>
+              <button type="button" onClick={closeSendModal}>
                 <X className="size-5 text-muted-foreground" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium">Campaign Name</label>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  placeholder="May 2026 Newsletter"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Subject Line</label>
-                <input
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  required
-                  placeholder="Summer skincare tips from Lux..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Resend Broadcast ID</label>
-                <input
-                  value={broadcastId}
-                  onChange={(e) => setBroadcastId(e.target.value)}
-                  required
-                  placeholder="broadcast_abc123..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
-                />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Found in Resend dashboard → Broadcasts
+            {sendSuccess ? (
+              <div className="py-8 text-center">
+                <p className="text-lg font-medium text-green-600">
+                  {scheduledAt ? "Newsletter scheduled!" : "Newsletter sent!"}
                 </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  It will appear in the campaign list above.
+                </p>
+                <button
+                  type="button"
+                  onClick={closeSendModal}
+                  className="mt-4 rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark"
+                >
+                  Close
+                </button>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+            ) : (
+              <form onSubmit={handleSend} className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Sent At</label>
+                  <label className="mb-1 block text-sm font-medium">Subject Line</label>
                   <input
-                    type="date"
-                    value={sentAt}
-                    onChange={(e) => setSentAt(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                    value={sendSubject}
+                    onChange={(e) => setSendSubject(e.target.value)}
+                    required
+                    placeholder="Summer skincare tips from Lux..."
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Recipients</label>
-                  <input
-                    type="number"
-                    value={recipients}
-                    onChange={(e) => setRecipients(e.target.value)}
-                    placeholder="0"
-                    min="0"
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
-                  />
+                  <label className="mb-1 block text-sm font-medium">Body</label>
+                  <div className="rounded-lg border border-border bg-background focus-within:ring-2 focus-within:ring-admin-gold">
+                    <TiptapToolbar editor={editor} />
+                    <EditorContent editor={editor} />
+                  </div>
                 </div>
-              </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    Schedule (optional — leave blank to send immediately)
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={scheduledAt}
+                    onChange={(e) => setScheduledAt(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">Time is in your local timezone.</p>
+                </div>
 
-              {error && <p className="text-sm text-destructive">{error}</p>}
+                {sendError && <p className="text-sm text-destructive">{sendError}</p>}
 
-              <button
-                type="submit"
-                disabled={!name || !subject || !broadcastId || submitting}
-                className="w-full rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a] disabled:opacity-50"
-              >
-                {submitting ? "Saving..." : "Add Campaign"}
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  disabled={!sendSubject.trim() || sending}
+                  className="w-full rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark disabled:opacity-50"
+                >
+                  {sending ? "Sending..." : scheduledAt ? "Schedule Newsletter" : "Send Now"}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}
+
     </div>
   );
 }

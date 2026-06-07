@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Eye, EyeOff, Trash2, Pencil, X } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import type { DbTestimonial } from "@/lib/types/db";
 
@@ -28,8 +29,14 @@ export function TestimonialsClient({
   onToggleVisibility,
 }: Props) {
   const router = useRouter();
+  const [prevInitial, setPrevInitial] = useState(initialTestimonials);
   const [items, setItems] = useState(initialTestimonials);
+  if (prevInitial !== initialTestimonials) {
+    setPrevInitial(initialTestimonials);
+    setItems(initialTestimonials);
+  }
   const [panel, setPanel] = useState<PanelState>({ mode: "closed" });
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,9 +87,9 @@ export function TestimonialsClient({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this testimonial?")) return;
     await onDelete(id);
     setItems((prev) => prev.filter((t) => t.id !== id));
+    setConfirmId(null);
   }
 
   async function handleToggle(id: string, current: boolean) {
@@ -106,7 +113,7 @@ export function TestimonialsClient({
         <button
           type="button"
           onClick={openCreate}
-          className="flex items-center gap-2 rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a]"
+          className="flex items-center gap-2 rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark"
         >
           <Plus className="size-4" /> Add Testimonial
         </button>
@@ -167,7 +174,7 @@ export function TestimonialsClient({
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleDelete(t.id)}
+                  onClick={() => setConfirmId(t.id)}
                   className="rounded p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   aria-label="Delete testimonial"
                 >
@@ -204,7 +211,7 @@ export function TestimonialsClient({
                   rows={4}
                   required
                   placeholder="The staff is absolutely amazing..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                 />
               </div>
               <div>
@@ -215,7 +222,7 @@ export function TestimonialsClient({
                   onChange={(e) => setAuthor(e.target.value)}
                   required
                   placeholder="Jane D."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                 />
               </div>
               <div>
@@ -223,6 +230,7 @@ export function TestimonialsClient({
                 <ImageUpload
                   bucket="lux-testimonials"
                   onUpload={setPhotoUrl}
+                  onRemove={() => setPhotoUrl("")}
                   currentUrl={photoUrl || undefined}
                   label="Client headshot"
                 />
@@ -233,7 +241,7 @@ export function TestimonialsClient({
               <button
                 type="submit"
                 disabled={!quote || !author || submitting}
-                className="w-full rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a] disabled:opacity-50"
+                className="w-full rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark disabled:opacity-50"
               >
                 {submitting ? "Saving..." : "Save Testimonial"}
               </button>
@@ -241,6 +249,12 @@ export function TestimonialsClient({
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={confirmId !== null}
+        message="Delete this testimonial? This cannot be undone."
+        onConfirm={() => confirmId && handleDelete(confirmId)}
+        onCancel={() => setConfirmId(null)}
+      />
     </div>
   );
 }

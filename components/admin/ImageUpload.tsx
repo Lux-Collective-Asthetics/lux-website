@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Upload, ImageIcon, X, Loader2 } from "lucide-react";
+import { Upload, ImageIcon, X, Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ImageUploadProps = {
   bucket: "lux-gallery" | "lux-testimonials" | "lux-services" | "lux-staff";
   onUpload: (publicUrl: string) => void;
+  onRemove?: () => void;
   currentUrl?: string;
   accept?: string;
   maxMb?: number;
@@ -16,6 +17,7 @@ type ImageUploadProps = {
 export function ImageUpload({
   bucket,
   onUpload,
+  onRemove,
   currentUrl,
   accept = "image/*",
   maxMb = 10,
@@ -82,6 +84,8 @@ export function ImageUpload({
   };
 
   const displayed = preview ?? currentUrl;
+  // Hide dropzone once an image is saved — user must remove before replacing
+  const showDropzone = !currentUrl || !!preview;
 
   return (
     <div className="space-y-3">
@@ -89,19 +93,29 @@ export function ImageUpload({
         <div className="relative h-40 w-full overflow-hidden rounded-lg border border-border">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={displayed} alt="Preview" className="h-full w-full object-cover" />
-          {preview && (
+          {preview ? (
             <button
               type="button"
+              aria-label="Cancel selection"
               onClick={() => { setPreview(null); setFile(null); }}
               className="absolute right-2 top-2 rounded-full bg-background/80 p-1 hover:bg-background"
             >
               <X className="size-4" />
             </button>
+          ) : onRemove && (
+            <button
+              type="button"
+              aria-label="Remove image"
+              onClick={onRemove}
+              className="absolute right-2 top-2 flex items-center gap-1 rounded bg-background/80 px-2 py-1 text-xs font-medium text-destructive hover:bg-background"
+            >
+              <Trash2 className="size-3.5" /> Remove
+            </button>
           )}
         </div>
       )}
 
-      <div
+      {showDropzone && <div
         role="button"
         tabIndex={0}
         aria-label={label}
@@ -117,7 +131,7 @@ export function ImageUpload({
         onDrop={handleDrop}
         className={cn(
           "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 transition-colors",
-          dragging ? "border-[#c9a96e] bg-[#fdf5e8]" : "border-border hover:border-[#c9a96e]/50 hover:bg-muted/40"
+          dragging ? "border-admin-gold bg-[#fdf5e8]" : "border-border hover:border-admin-gold/50 hover:bg-muted/40"
         )}
       >
         <ImageIcon className="size-8 text-muted-foreground" />
@@ -125,12 +139,14 @@ export function ImageUpload({
           <span className="font-medium text-foreground">Click to browse</span> or drag and drop
         </p>
         <p className="text-xs text-muted-foreground">{label} · Max {maxMb} MB</p>
-      </div>
+      </div>}
 
       <input
         ref={inputRef}
         type="file"
         accept={accept}
+        aria-label={label}
+        title={label}
         className="hidden"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
       />
@@ -142,7 +158,7 @@ export function ImageUpload({
           type="button"
           onClick={handleUpload}
           disabled={uploading}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a] disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark disabled:opacity-50"
         >
           {uploading ? (
             <><Loader2 className="size-4 animate-spin" /> Uploading...</>

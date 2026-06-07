@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { CheckCircle } from "lucide-react";
+import { AlertCircle, CheckCircle, Info } from "lucide-react";
 
 import { subscribe, type SubscribeState } from "@/app/(public)/newsletter/actions";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,18 @@ export function SubscribeForm() {
     );
   }
 
+  if (state.status === "already_subscribed") {
+    return (
+      <div className="flex items-start gap-3 rounded-lg border border-border bg-card p-5">
+        <Info className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+        <div>
+          <p className="font-medium text-primary">Already subscribed</p>
+          <p className="mt-1 text-sm text-muted-foreground">{state.message}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <form action={formAction} className="space-y-4" noValidate>
       <input
@@ -42,9 +54,10 @@ export function SubscribeForm() {
       />
 
       {state.status === "error" && !state.errors && (
-        <p role="alert" className="text-sm text-destructive">
-          {state.message}
-        </p>
+        <div role="alert" className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+          <AlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
+          <p className="text-sm text-destructive">{state.message}</p>
+        </div>
       )}
 
       <div className="space-y-1.5">
@@ -59,7 +72,8 @@ export function SubscribeForm() {
           aria-describedby={state.errors?.email ? "sub-email-error" : undefined}
         />
         {state.errors?.email && (
-          <p id="sub-email-error" role="alert" className="text-xs text-destructive">
+          <p id="sub-email-error" role="alert" className="flex items-center gap-1.5 text-xs text-destructive">
+            <AlertCircle className="size-3.5 shrink-0" />
             {state.errors.email[0]}
           </p>
         )}

@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 
 import { HomepageTestimonials } from "@/components/homepage-testimonials";
+import { HomepageProviders } from "@/components/homepage-providers";
 import { LuxHero } from "@/components/lux-hero";
 import { RevealSection } from "@/components/shared/reveal-section";
 import { LuxFeaturesScroll } from "@/components/ui/text-parallax-scroll";
-import { business } from "@/content/site";
+import { business, staff as staticStaff, testimonials as staticTestimonials } from "@/content/site";
 import type { Testimonial } from "@/content/site";
-import { getBookingUrl } from "@/lib/booking";
 import { siteUrl } from "@/lib/site-url";
 import { createClient } from "@/lib/supabase/server";
+import type { ServiceCategory, StaffMemberWithServices } from "@/lib/types/db";
 
 export const dynamic = "force-dynamic";
 
@@ -61,25 +62,69 @@ const localBusinessSchema = {
 };
 
 export default async function Home() {
-  const bookingUrl = getBookingUrl();
   let homepageTestimonials: Testimonial[] = [];
+  let homepageStaff: StaffMemberWithServices[] = [];
+  let serviceCategories: ServiceCategory[] = [];
+  let shouldUseFallback = false;
 
   try {
     const supabase = await createClient();
-    const { data: dbTestimonials, error } = await supabase
-      .from("testimonials")
-      .select("quote, author")
-      .eq("is_visible", true)
-      .order("display_order");
+    const [testimonialsRes, staffRes, categoriesRes] = await Promise.all([
+      supabase
+        .from("testimonials")
+        .select("quote, author")
+        .eq("is_visible", true)
+        .order("display_order"),
+      supabase
+        .from("staff_members")
+        .select("*, staff_services(service_id, services(id, name))")
+        .eq("is_visible", true)
+        .order("display_order"),
+      supabase
+        .from("service_categories")
+        .select("*")
+        .order("display_order"),
+    ]);
 
-    if (!error && dbTestimonials) {
-      homepageTestimonials = dbTestimonials.map((testimonial: { quote: string; author: string }) => ({
-        quote: testimonial.quote,
-        author: testimonial.author,
+    if (testimonialsRes.error) {
+      shouldUseFallback = true;
+    } else if (testimonialsRes.data) {
+      homepageTestimonials = testimonialsRes.data.map((t: { quote: string; author: string }) => ({
+        quote: t.quote,
+        author: t.author,
       }));
     }
+
+    if (!staffRes.error) {
+      homepageStaff = (staffRes.data ?? []) as StaffMemberWithServices[];
+    }
+
+    if (!categoriesRes.error) {
+      serviceCategories = (categoriesRes.data ?? []) as ServiceCategory[];
+    }
   } catch {
-    homepageTestimonials = [];
+    shouldUseFallback = true;
+  }
+
+  if (shouldUseFallback && homepageTestimonials.length === 0) {
+    homepageTestimonials = staticTestimonials;
+  }
+
+  if (homepageStaff.length === 0) {
+    homepageStaff = staticStaff.map((member, index) => ({
+      id: `static-${index}`,
+      name: member.name,
+      credential: member.credential,
+      title: member.title,
+      bio: member.bio,
+      photo_url: member.photo ?? null,
+      booking_url: null,
+      display_order: index,
+      is_visible: true,
+      is_owner: member.isOwner ?? false,
+      created_at: new Date().toISOString(),
+      staff_services: [],
+    }));
   }
 
   return (
@@ -90,10 +135,13 @@ export default async function Home() {
       />
 
       {/* Hero */}
-      <LuxHero bookingUrl={bookingUrl} />
+      <LuxHero />
 
       {/* Signature services */}
-      <LuxFeaturesScroll />
+      <LuxFeaturesScroll initialCategories={serviceCategories} />
+
+      {/* Our providers */}
+      <HomepageProviders initialStaff={homepageStaff} />
 
       {/* Testimonials */}
       <RevealSection>

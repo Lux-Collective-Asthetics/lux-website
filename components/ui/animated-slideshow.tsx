@@ -1,13 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { HTMLMotionProps, MotionConfig, motion } from "motion/react";
+import { HTMLMotionProps, motion } from "motion/react";
 import { cn } from "@/lib/utils";
-
-interface TextStaggerHoverProps {
-  text: string;
-  index: number;
-}
 
 interface HoverSliderImageProps {
   index: number;
@@ -19,14 +14,9 @@ interface HoverSliderContextValue {
   changeSlide: (index: number) => void;
 }
 
-function splitText(text: string) {
-  const words = text.split(" ").map((w) => w.concat(" "));
-  return words.map((w) => w.split("")).flat(1);
-}
-
 const HoverSliderContext = React.createContext<HoverSliderContextValue | undefined>(undefined);
 
-function useHoverSliderContext() {
+export function useHoverSliderContext() {
   const ctx = React.useContext(HoverSliderContext);
   if (!ctx) throw new Error("useHoverSliderContext must be used within HoverSlider");
   return ctx;
@@ -46,52 +36,17 @@ export const HoverSlider = React.forwardRef<
 });
 HoverSlider.displayName = "HoverSlider";
 
-export const TextStaggerHover = React.forwardRef<
-  HTMLElement,
-  React.HTMLAttributes<HTMLElement> & TextStaggerHoverProps
->(({ text, index, className, ...props }, ref) => {
-  const { activeSlide, changeSlide } = useHoverSliderContext();
-  const characters = splitText(text);
-  const isActive = activeSlide === index;
-
-  return (
-    <span
-      className={cn("relative inline-block origin-bottom overflow-hidden", className)}
-      onMouseEnter={() => changeSlide(index)}
-      ref={ref}
-      {...props}
-    >
-      {characters.map((char, i) => (
-        <span key={`${char}-${i}`} className="relative inline-block overflow-hidden">
-          <MotionConfig
-            transition={{ delay: i * 0.025, duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-          >
-            <motion.span
-              className="inline-block opacity-25"
-              initial={{ y: "0%" }}
-              animate={isActive ? { y: "-110%" } : { y: "0%" }}
-            >
-              {char}
-              {char === " " && i < characters.length - 1 && <>&nbsp;</>}
-            </motion.span>
-            <motion.span
-              className="absolute left-0 top-0 inline-block opacity-100"
-              initial={{ y: "110%" }}
-              animate={isActive ? { y: "0%" } : { y: "110%" }}
-            >
-              {char}
-            </motion.span>
-          </MotionConfig>
-        </span>
-      ))}
-    </span>
-  );
-});
-TextStaggerHover.displayName = "TextStaggerHover";
-
+// Inactive images snap to hidden instantly so they don't cross-wipe with the
+// entering image and create a split-screen artifact.
 export const clipPathVariants = {
-  visible: { clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)" },
-  hidden:  { clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0px)" },
+  visible: {
+    clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+    transition: { ease: [0.33, 1, 0.68, 1] as [number, number, number, number], duration: 0.8 },
+  },
+  hidden: {
+    clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0px)",
+    transition: { duration: 0 },
+  },
 };
 
 export const HoverSliderImageWrap = React.forwardRef<
@@ -100,10 +55,7 @@ export const HoverSliderImageWrap = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn(
-      "grid overflow-hidden [&>*]:col-start-1 [&>*]:col-end-1 [&>*]:row-start-1 [&>*]:row-end-1 [&>*]:size-full",
-      className
-    )}
+    className={cn("relative overflow-hidden", className)}
     {...props}
   />
 ));
@@ -112,15 +64,16 @@ HoverSliderImageWrap.displayName = "HoverSliderImageWrap";
 export const HoverSliderImage = React.forwardRef<
   HTMLImageElement,
   HTMLMotionProps<"img"> & HoverSliderImageProps
->(({ index, imageUrl, className, ...props }, ref) => {
+>(({ index, imageUrl, className, style, ...props }, ref) => {
   const { activeSlide } = useHoverSliderContext();
+  const isActive = activeSlide === index;
   return (
     <motion.img
       src={imageUrl}
-      className={cn("inline-block align-middle", className)}
-      transition={{ ease: [0.33, 1, 0.68, 1], duration: 0.8 }}
+      className={cn("absolute inset-0 block w-full h-full object-contain", className)}
       variants={clipPathVariants}
-      animate={activeSlide === index ? "visible" : "hidden"}
+      animate={isActive ? "visible" : "hidden"}
+      style={{ zIndex: isActive ? 1 : 0, ...style }}
       ref={ref}
       {...props}
     />

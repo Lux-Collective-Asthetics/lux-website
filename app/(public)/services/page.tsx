@@ -3,10 +3,10 @@ import { Sparkles } from "lucide-react";
 
 import { PublicServicesPricing } from "@/components/public-services-pricing";
 import { ServiceSlideshow } from "@/components/service-slideshow";
-import { getBookingUrl } from "@/lib/booking";
 import { createClient } from "@/lib/supabase/server";
 import { serviceGroups as defaultServiceGroups } from "@/content/site";
 import type { ServiceGroup, Service } from "@/content/site";
+import type { ServiceCategory } from "@/lib/types/db";
 
 export const dynamic = "force-dynamic";
 
@@ -31,19 +31,34 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function ServicesPage() {
-  const bookingUrl = getBookingUrl();
+export default async function ServicesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const { category: initialCategory } = await searchParams;
 
   let serviceGroups: ServiceGroup[] = [];
+  let serviceCategories: ServiceCategory[] = [];
   let shouldUseFallback = false;
 
   try {
     const supabase = await createClient();
-    const { data: dbServices, error } = await supabase
-      .from("services")
-      .select("*, service_price_lines(*)")
-      .eq("is_visible", true)
-      .order("display_order");
+    const [{ data: dbServices, error }, categoriesRes] = await Promise.all([
+      supabase
+        .from("services")
+        .select("*, service_price_lines(*)")
+        .eq("is_visible", true)
+        .order("display_order"),
+      supabase
+        .from("service_categories")
+        .select("*")
+        .order("display_order"),
+    ]);
+
+    if (!categoriesRes.error) {
+      serviceCategories = (categoriesRes.data ?? []) as ServiceCategory[];
+    }
 
     if (error) {
       shouldUseFallback = true;
@@ -66,7 +81,6 @@ export default async function ServicesPage() {
       serviceGroups.push(...Object.values(grouped));
     }
   } catch {
-    // Fall back to local static service definitions when Supabase is unavailable.
     shouldUseFallback = true;
   }
 
@@ -77,7 +91,7 @@ export default async function ServicesPage() {
   return (
     <>
       {/* Gradient hero */}
-      <section className="relative flex min-h-[380px] items-center overflow-hidden bg-[linear-gradient(145deg,var(--cream),var(--blush))]">
+      <section className="relative flex min-h-95 items-center overflow-hidden bg-[linear-gradient(145deg,var(--cream),var(--blush))]">
         <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-12 size-72 rounded-full bg-blush opacity-45" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 left-12 size-52 rounded-full bg-taupe opacity-35" />
         <div className="relative z-10 mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8">
@@ -98,11 +112,12 @@ export default async function ServicesPage() {
 
       {/* Service category slideshow */}
       <div className="mx-auto max-w-7xl">
-        <ServiceSlideshow />
+        <ServiceSlideshow initialCategories={serviceCategories} initialServiceGroups={serviceGroups} />
       </div>
 
       {/* Service groups */}
-      <PublicServicesPricing bookingUrl={bookingUrl} initialServiceGroups={serviceGroups} />
+      <div id="services-grid" />
+      <PublicServicesPricing initialServiceGroups={serviceGroups} initialActiveCategory={initialCategory} />
     </>
   );
 }
