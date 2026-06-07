@@ -29,10 +29,6 @@ const categoryCopy: Record<string, string> = {
   Wellness:          "Provider-led support for weight loss and select in-office procedures.",
 };
 
-function slug(name: string) {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-}
-
 function categorySlug(name: string) {
   return name.toLowerCase().replace(/\s+/g, "-");
 }

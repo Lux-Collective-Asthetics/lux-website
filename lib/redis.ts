@@ -1,7 +1,7 @@
 import { Redis } from "@upstash/redis";
 import { Ratelimit } from "@upstash/ratelimit";
 
-const noop = { limit: async (_id: string) => ({ success: true }) };
+const noop = { limit: async (_: string) => ({ success: true }) };
 
 const { UPSTASH_REDIS_REST_URL: url, UPSTASH_REDIS_REST_TOKEN: token } = process.env;
 
