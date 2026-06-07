@@ -73,6 +73,8 @@ export async function sendNewsletter(data: {
     scheduledAt: data.scheduledAt || undefined,
   });
 
+  // Email sent successfully — audit log is best-effort; don't let a DB failure
+  // obscure that the broadcast went out.
   const supabase = createServiceClient();
   const { error } = await supabase.from("newsletter_sends").insert({
     campaign_name: data.subject,
@@ -83,6 +85,8 @@ export async function sendNewsletter(data: {
     open_count: 0,
     click_count: 0,
   });
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("[newsletter] broadcast sent but audit log failed:", error.message);
+  }
   revalidatePath("/admin/newsletters");
 }

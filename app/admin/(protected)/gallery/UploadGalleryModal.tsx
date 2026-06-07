@@ -63,7 +63,7 @@ export function UploadGalleryModal({ categories, onSubmit }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a]"
+        className="flex items-center gap-2 rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark"
       >
         <Plus className="size-4" /> Add Image Pair
       </button>
@@ -93,7 +93,7 @@ export function UploadGalleryModal({ categories, onSubmit }: Props) {
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Botox — Forehead Lines"
                   required
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                 />
               </div>
 
@@ -105,7 +105,7 @@ export function UploadGalleryModal({ categories, onSubmit }: Props) {
                   id="gallery-category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                 >
                   {categories.map((c) => (
                     <option key={c}>{c}</option>
@@ -122,7 +122,7 @@ export function UploadGalleryModal({ categories, onSubmit }: Props) {
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
                   placeholder="2 weeks post-treatment"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                 />
               </div>
 
@@ -165,7 +165,7 @@ export function UploadGalleryModal({ categories, onSubmit }: Props) {
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="w-full rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a] disabled:opacity-50"
+                className="w-full rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark disabled:opacity-50"
               >
                 {submitting ? "Saving..." : "Save Image Pair"}
               </button>

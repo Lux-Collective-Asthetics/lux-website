@@ -44,22 +44,22 @@ function TiptapToolbar({ editor }: { editor: Editor | null }) {
       <button
         type="button"
         onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBold().run(); }}
-        className={cn("rounded px-2 py-1 text-sm font-bold", editor.isActive("bold") ? "bg-[#c9a96e] text-white" : "hover:bg-muted")}
+        className={cn("rounded px-2 py-1 text-sm font-bold", editor.isActive("bold") ? "bg-admin-gold text-white" : "hover:bg-muted")}
       >B</button>
       <button
         type="button"
         onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleItalic().run(); }}
-        className={cn("rounded px-2 py-1 text-sm italic", editor.isActive("italic") ? "bg-[#c9a96e] text-white" : "hover:bg-muted")}
+        className={cn("rounded px-2 py-1 text-sm italic", editor.isActive("italic") ? "bg-admin-gold text-white" : "hover:bg-muted")}
       >I</button>
       <button
         type="button"
         onMouseDown={(e) => { e.preventDefault(); setLink(); }}
-        className={cn("rounded px-2 py-1 text-sm", editor.isActive("link") ? "bg-[#c9a96e] text-white" : "hover:bg-muted")}
+        className={cn("rounded px-2 py-1 text-sm", editor.isActive("link") ? "bg-admin-gold text-white" : "hover:bg-muted")}
       >Link</button>
       <button
         type="button"
         onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBulletList().run(); }}
-        className={cn("rounded px-2 py-1 text-sm", editor.isActive("bulletList") ? "bg-[#c9a96e] text-white" : "hover:bg-muted")}
+        className={cn("rounded px-2 py-1 text-sm", editor.isActive("bulletList") ? "bg-admin-gold text-white" : "hover:bg-muted")}
       >• List</button>
     </div>
   );
@@ -211,7 +211,7 @@ export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
           <button
             type="button"
             onClick={() => setShowSendModal(true)}
-            className="flex items-center gap-2 rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a]"
+            className="flex items-center gap-2 rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark"
           >
             <Send className="size-4" /> Send Newsletter
           </button>
@@ -307,7 +307,7 @@ export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
                 <button
                   type="button"
                   onClick={closeSendModal}
-                  className="mt-4 rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a]"
+                  className="mt-4 rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark"
                 >
                   Close
                 </button>
@@ -321,12 +321,12 @@ export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
                     onChange={(e) => setSendSubject(e.target.value)}
                     required
                     placeholder="Summer skincare tips from Lux..."
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                   />
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium">Body</label>
-                  <div className="rounded-lg border border-border bg-background focus-within:ring-2 focus-within:ring-[#c9a96e]">
+                  <div className="rounded-lg border border-border bg-background focus-within:ring-2 focus-within:ring-admin-gold">
                     <TiptapToolbar editor={editor} />
                     <EditorContent editor={editor} />
                   </div>
@@ -339,7 +339,7 @@ export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
                     type="datetime-local"
                     value={scheduledAt}
                     onChange={(e) => setScheduledAt(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                   />
                   <p className="mt-1 text-xs text-muted-foreground">Time is in your local timezone.</p>
                 </div>
@@ -349,7 +349,7 @@ export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
                 <button
                   type="submit"
                   disabled={!sendSubject.trim() || sending}
-                  className="w-full rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a] disabled:opacity-50"
+                  className="w-full rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark disabled:opacity-50"
                 >
                   {sending ? "Sending..." : scheduledAt ? "Schedule Newsletter" : "Send Now"}
                 </button>
@@ -384,7 +384,7 @@ export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
                   onChange={(e) => setName(e.target.value)}
                   required
                   placeholder="May 2026 Newsletter"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                 />
               </div>
               <div>
@@ -394,7 +394,7 @@ export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
                   onChange={(e) => setSubject(e.target.value)}
                   required
                   placeholder="Summer skincare tips from Lux..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                 />
               </div>
               <div>
@@ -404,7 +404,7 @@ export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
                   onChange={(e) => setBroadcastId(e.target.value)}
                   required
                   placeholder="broadcast_abc123..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                 />
                 <p className="mt-1 text-xs text-muted-foreground">Found in Resend dashboard → Broadcasts</p>
               </div>
@@ -415,7 +415,7 @@ export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
                     type="date"
                     value={sentAt}
                     onChange={(e) => setSentAt(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                   />
                 </div>
                 <div>
@@ -426,7 +426,7 @@ export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
                     onChange={(e) => setRecipients(e.target.value)}
                     placeholder="0"
                     min="0"
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                   />
                 </div>
               </div>
@@ -436,7 +436,7 @@ export function NewslettersClient({ initialSends, onCreate, onSend }: Props) {
               <button
                 type="submit"
                 disabled={!name || !subject || !broadcastId || submitting}
-                className="w-full rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a] disabled:opacity-50"
+                className="w-full rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark disabled:opacity-50"
               >
                 {submitting ? "Saving..." : "Log Campaign"}
               </button>

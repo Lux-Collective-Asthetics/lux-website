@@ -61,7 +61,7 @@ export function DeleteCategoryModal({
                 id="reassign-select"
                 value={reassignToId}
                 onChange={(e) => setReassignToId(e.target.value)}
-                className="w-full rounded border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#c9a96e]"
+                className="w-full rounded border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-admin-gold"
               >
                 <option value="">Other (system fallback)</option>
                 {otherCategories

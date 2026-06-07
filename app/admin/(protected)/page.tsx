@@ -61,7 +61,7 @@ export default async function AdminDashboard() {
             className="flex items-start gap-4 rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted/40"
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#fdf5e8]">
-              <stat.icon className="size-5 text-[#c9a96e]" />
+              <stat.icon className="size-5 text-admin-gold" />
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">

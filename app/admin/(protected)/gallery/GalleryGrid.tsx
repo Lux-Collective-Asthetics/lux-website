@@ -178,7 +178,7 @@ function SortableCard({
         <div className="absolute left-2 top-2 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
           Before
         </div>
-        <div className="absolute right-2 top-2 rounded bg-[#c9a96e]/80 px-1.5 py-0.5 text-[10px] text-white">
+        <div className="absolute right-2 top-2 rounded bg-admin-gold/80 px-1.5 py-0.5 text-[10px] text-white">
           After
         </div>
       </div>

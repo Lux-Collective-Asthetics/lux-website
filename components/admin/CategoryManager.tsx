@@ -153,7 +153,7 @@ export function CategoryManager({ categories, saving, onAdd, onRequestDelete, on
             if (e.key === "Enter") { e.preventDefault(); handleAdd(); }
           }}
           placeholder="New category name"
-          className="flex-1 rounded border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#c9a96e]"
+          className="flex-1 rounded border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-admin-gold"
         />
         <button
           type="button"

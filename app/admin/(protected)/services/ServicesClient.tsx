@@ -289,7 +289,7 @@ export function ServicesClient({
               );
               setShowNewForm(true);
             }}
-            className="flex items-center gap-1.5 rounded-full bg-[#c9a96e] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#b8954f]"
+            className="flex items-center gap-1.5 rounded-full bg-admin-gold px-3 py-1.5 text-sm font-medium text-white hover:bg-admin-gold-dark"
           >
             <Plus className="size-3.5" />
             New service
@@ -307,7 +307,7 @@ export function ServicesClient({
               onClick={() => selectCategory(cat.id)}
               className={`flex shrink-0 items-center gap-1.5 rounded-t-md px-3 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
                 activeAdminCategoryId === cat.id
-                  ? "border-[#c9a96e] text-foreground"
+                  ? "border-admin-gold text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -337,7 +337,7 @@ export function ServicesClient({
       {showNewForm && (
         <form
           onSubmit={handleCreate}
-          className="mb-6 rounded-lg border border-[#c9a96e]/40 bg-card p-5"
+          className="mb-6 rounded-lg border border-admin-gold/40 bg-card p-5"
         >
           <div className="mb-4 flex items-center justify-between gap-4">
             <h2 className="text-sm font-semibold text-foreground">New service</h2>
@@ -360,7 +360,7 @@ export function ServicesClient({
                 required
                 value={newForm.name}
                 onChange={(e) => setNewForm((p) => ({ ...p, name: e.target.value }))}
-                className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#c9a96e]"
+                className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-admin-gold"
               />
             </div>
             <div>
@@ -375,7 +375,7 @@ export function ServicesClient({
                   const cat = localCategories.find((c) => c.id === e.target.value);
                   setNewForm((p) => ({ ...p, category_id: e.target.value, category: cat?.name ?? "" }));
                 }}
-                className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#c9a96e]"
+                className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-admin-gold"
               >
                 <option value="">Select a category…</option>
                 {localCategories.map((cat) => (
@@ -392,7 +392,7 @@ export function ServicesClient({
                 rows={2}
                 value={newForm.summary}
                 onChange={(e) => setNewForm((p) => ({ ...p, summary: e.target.value }))}
-                className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#c9a96e]"
+                className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-admin-gold"
               />
             </div>
             <div>
@@ -404,7 +404,7 @@ export function ServicesClient({
                 placeholder="e.g. 30–45 min"
                 value={newForm.duration}
                 onChange={(e) => setNewForm((p) => ({ ...p, duration: e.target.value }))}
-                className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#c9a96e]"
+                className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-admin-gold"
               />
             </div>
             <div>
@@ -429,7 +429,7 @@ export function ServicesClient({
             <button
               type="submit"
               disabled={newFormSaving || !newForm.name.trim() || !newForm.category_id}
-              className="rounded bg-[#c9a96e] px-4 py-1.5 text-sm font-medium text-white hover:bg-[#b8954f] disabled:opacity-50"
+              className="rounded bg-admin-gold px-4 py-1.5 text-sm font-medium text-white hover:bg-admin-gold-dark disabled:opacity-50"
             >
               {newFormSaving ? "Creating…" : "Create service"}
             </button>
@@ -460,7 +460,7 @@ export function ServicesClient({
                   );
                   setShowNewForm(true);
                 }}
-                className="text-[#c9a96e] underline-offset-2 hover:underline"
+                className="text-admin-gold underline-offset-2 hover:underline"
               >
                 Add the first service
               </button>
@@ -585,20 +585,20 @@ function ServiceCard({
                 aria-label="Service name"
                 value={editValues.name}
                 onChange={(e) => onEditChange("name", e.target.value)}
-                className="w-full rounded border border-border bg-background px-2 py-1 text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-[#c9a96e]"
+                className="w-full rounded border border-border bg-background px-2 py-1 text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-admin-gold"
               />
               <textarea
                 aria-label="Service summary"
                 value={editValues.summary}
                 onChange={(e) => onEditChange("summary", e.target.value)}
                 rows={2}
-                className="w-full rounded border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#c9a96e]"
+                className="w-full rounded border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-admin-gold"
               />
               <input
                 value={editValues.duration}
                 onChange={(e) => onEditChange("duration", e.target.value)}
                 placeholder="Duration (e.g. 30–45 min)"
-                className="w-full rounded border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#c9a96e]"
+                className="w-full rounded border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-admin-gold"
               />
               <div>
                 <p className="mb-1 text-xs font-medium text-muted-foreground">Hero image</p>

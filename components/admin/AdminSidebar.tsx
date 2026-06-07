@@ -92,7 +92,7 @@ export function AdminSidebar({ user, onSignOut }: AdminSidebarProps) {
         )}
       >
         {/* Gold circle logomark */}
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#c9a96e]">
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-admin-gold">
           <span className="text-sm font-bold text-white">L</span>
         </div>
         {!collapsed && (
@@ -137,7 +137,7 @@ export function AdminSidebar({ user, onSignOut }: AdminSidebarProps) {
                   "flex items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-colors",
                   collapsed && "justify-center",
                   active
-                    ? "bg-[#fdf5e8] text-[#c9a96e]"
+                    ? "bg-[#fdf5e8] text-admin-gold"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 );
 

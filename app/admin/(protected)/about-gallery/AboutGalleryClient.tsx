@@ -87,7 +87,7 @@ export function AboutGalleryClient({
         <button
           type="button"
           onClick={() => setShowUpload((s) => !s)}
-          className="flex items-center gap-2 rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a]"
+          className="flex items-center gap-2 rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark"
         >
           <Plus className="size-4" /> Add Photo
         </button>
@@ -113,14 +113,14 @@ export function AboutGalleryClient({
                 value={pendingCaption}
                 onChange={(e) => setPendingCaption(e.target.value)}
                 placeholder="Caption (optional)"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
               />
               {error && <p className="text-sm text-destructive">{error}</p>}
               <button
                 type="button"
                 onClick={handleAdd}
                 disabled={saving}
-                className="w-full rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a] disabled:opacity-50"
+                className="w-full rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark disabled:opacity-50"
               >
                 {saving ? "Saving..." : "Add to Gallery"}
               </button>
@@ -156,7 +156,7 @@ export function AboutGalleryClient({
                       value={editCaption}
                       onChange={(e) => setEditCaption(e.target.value)}
                       placeholder="Caption"
-                      className="flex-1 rounded border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-[#c9a96e]"
+                      className="flex-1 rounded border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-admin-gold"
                       autoFocus
                     />
                     <button type="button" onClick={() => handleSaveCaption(photo.id)}>

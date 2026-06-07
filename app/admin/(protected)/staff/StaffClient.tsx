@@ -218,7 +218,7 @@ export function StaffClient({
         <button
           type="button"
           onClick={openCreate}
-          className="flex items-center gap-2 rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a]"
+          className="flex items-center gap-2 rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark"
         >
           <Plus className="size-4" /> Add Staff Member
         </button>
@@ -255,7 +255,7 @@ export function StaffClient({
                   <p className="text-xs text-muted-foreground">{member.title}</p>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
                     {member.booking_url && (
-                      <p className="text-xs text-[#c9a96e]">Booking link set</p>
+                      <p className="text-xs text-admin-gold">Booking link set</p>
                     )}
                     {extraPhotos.length > 0 && (
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -357,7 +357,7 @@ export function StaffClient({
                     onChange={(e) => setField("name", e.target.value)}
                     required
                     placeholder="Jane Smith"
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                   />
                 </div>
                 <div>
@@ -367,7 +367,7 @@ export function StaffClient({
                     onChange={(e) => setField("credential", e.target.value)}
                     required
                     placeholder="CNP"
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                   />
                 </div>
               </div>
@@ -378,7 +378,7 @@ export function StaffClient({
                   onChange={(e) => setField("title", e.target.value)}
                   required
                   placeholder="Certified Nurse Practitioner"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                 />
               </div>
               <div>
@@ -388,7 +388,7 @@ export function StaffClient({
                   value={form.bio}
                   onChange={(e) => setField("bio", e.target.value)}
                   rows={3}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                 />
               </div>
               <div>
@@ -398,7 +398,7 @@ export function StaffClient({
                   value={form.booking_url}
                   onChange={(e) => setField("booking_url", e.target.value)}
                   placeholder="https://..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a96e]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-admin-gold"
                 />
               </div>
 
@@ -426,7 +426,7 @@ export function StaffClient({
                           prev === editMemberId ? null : editMemberId
                         )
                       }
-                      className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[#c9a96e] hover:bg-[#fdf5e8]"
+                      className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-admin-gold hover:bg-[#fdf5e8]"
                     >
                       <Plus className="size-3" /> Add photo
                     </button>
@@ -488,7 +488,7 @@ export function StaffClient({
               <button
                 type="submit"
                 disabled={!form.name || !form.credential || !form.title || submitting}
-                className="w-full rounded-lg bg-[#c9a96e] px-4 py-2 text-sm font-medium text-white hover:bg-[#b8955a] disabled:opacity-50"
+                className="w-full rounded-lg bg-admin-gold px-4 py-2 text-sm font-medium text-white hover:bg-admin-gold-dark disabled:opacity-50"
               >
                 {submitting
                   ? "Saving..."
