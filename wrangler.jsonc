@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "lux-website",
+  "account_id": "958f1306146c28b74735a23e2f3dd394",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-05-27",
   "compatibility_flags": ["nodejs_compat"],
@@ -22,5 +23,7 @@
   "observability": {
     "enabled": true
   },
-  "vars": {}
+  "vars": {
+    "ADMIN_EMAILS": "mevans@theluxcollectiveaesthetics.com,arobinson@theluxcollectiveaesthetics.com"
+  }
 }

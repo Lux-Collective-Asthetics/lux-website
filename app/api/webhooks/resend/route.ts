@@ -31,9 +31,10 @@ export async function POST(request: NextRequest) {
 
   const supabase = createServiceClient();
 
-  if (event.type === "contact.unsubscribed") {
+  if (event.type === "contact.updated") {
     const email = event.data?.email as string | undefined;
-    if (email) {
+    const unsubscribed = event.data?.unsubscribed as boolean | undefined;
+    if (email && unsubscribed === true) {
       const { error: updateError } = await supabase
         .from("subscribers")
         .update({ status: "unsubscribed", unsubscribed_at: new Date().toISOString() })

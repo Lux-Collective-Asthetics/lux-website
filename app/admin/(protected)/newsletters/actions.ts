@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/admin-auth";
-import { createAndSendBroadcast } from "@/lib/resend-audience";
+import { addContact, createAndSendBroadcast } from "@/lib/resend-audience";
 import { business } from "@/content/site";
 
 function wrapEmailHtml(bodyHtml: string, subject: string): string {
@@ -40,6 +40,17 @@ export async function sendNewsletter(data: {
   if (!data.subject?.trim()) throw new Error("Subject is required");
   if (!data.bodyHtml?.trim()) throw new Error("Body is required");
 
+  // Sync all active Supabase subscribers to Resend audience before sending.
+  // Resend's contacts.create is idempotent so re-adding existing contacts is safe.
+  const supabaseSync = createServiceClient();
+  const { data: subs } = await supabaseSync
+    .from("subscribers")
+    .select("email")
+    .eq("status", "active");
+  if (subs && subs.length > 0) {
+    await Promise.allSettled(subs.map((s) => addContact(s.email)));
+  }
+
   const wrappedHtml = wrapEmailHtml(data.bodyHtml, data.subject);
   const broadcastId = await createAndSendBroadcast({
     subject: data.subject,
@@ -49,8 +60,7 @@ export async function sendNewsletter(data: {
 
   // Email sent successfully — audit log is best-effort; don't let a DB failure
   // obscure that the broadcast went out.
-  const supabase = createServiceClient();
-  const { error } = await supabase.from("newsletter_sends").insert({
+  const { error } = await supabaseSync.from("newsletter_sends").insert({
     campaign_name: data.subject,
     subject: data.subject,
     resend_broadcast_id: broadcastId,
